@@ -37,24 +37,6 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <div class="inline-panel" id="inlinePanel"><button class="text-btn" style="float:right" onclick="closeInline()">Close ×</button><h3>Passage discussion</h3><blockquote id="selectedQuote"></blockquote><div id="inlineList"></div><input id="inlineName" placeholder="Your reader name"><textarea id="inlineText" rows="2" placeholder="Comment on this passage…"></textarea><button class="primary" onclick="postInline()">Add comment</button></div>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <script>
-
-// SUPABASE CONFIGURATION
-const SUPABASE_URL =
-  'https://qswgpgjokzixzofylikr.supabase.co';
-
-const SUPABASE_KEY =
-  'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
-
-// CONNECT TO SUPABASE
-const { createClient } = window.supabase;
-
-const db = createClient(
-  SUPABASE_URL,
-  SUPABASE_KEY
-);
-
-console.log('Supabase connected!');
-
 const total=50;let current=1, pending=1, selected=null, fontSize=19;
 const group=n=>Math.floor((n-1)/10)+1;
 const key=(kind,n)=>`gh_${kind}_${n}`;
