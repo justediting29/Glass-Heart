@@ -38,13 +38,9 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <aside class="side"><div class="settings"><h3>Reading room</h3><div class="control"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div><div class="control"><label>Page colour</label><input type="color" value="#f5f1e9" id="bg" onchange="setBg(this.value)"></div><div class="control"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div><div class="notice">Tap a sentence to open its discussion.</div></div></aside></div></section>
 <div class="inline-panel" id="inlinePanel"><button class="text-btn" style="float:right" onclick="closeInline()">Close ×</button><h3>Passage discussion</h3><blockquote id="selectedQuote"></blockquote><div id="inlineList"></div><input id="inlineName" placeholder="Your reader name"><textarea id="inlineText" rows="2" placeholder="Comment on this passage…"></textarea><button class="primary" onclick="postInline()">Add comment</button></div>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
-
 <script>
-/* ====== ISI DUA BARIS INI ====== */
-var SUPABASE_URL = 'https://XXXX.supabase.co';   // Project URL, tanpa /rest/v1
-var SUPABASE_KEY = 'ISI_ANON_PUBLIC_KEY';        // anon / publishable key
-/* =============================== */
-
+var SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';   // Project URL, tanpa /rest/v1
+var SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';        // anon / publishable key
 function showStatus(msg, ok){
   var b=document.getElementById('statusBar');
   b.style.display='block';
@@ -54,7 +50,6 @@ function showStatus(msg, ok){
 }
 window.onerror=function(m,s,l){showStatus('JS ERROR: '+m+' (baris '+l+')',false)};
 window.addEventListener('unhandledrejection',function(e){showStatus('PROMISE ERROR: '+(e.reason&&e.reason.message||e.reason),false)});
-
 var db=null;
 try{
   if(!window.supabase) throw new Error('Library Supabase tidak ter-load (cek internet)');
@@ -65,15 +60,12 @@ try{
     else showStatus('Database terhubung ✓',true);
   });
 }catch(e){showStatus(e.message,false)}
-
 const total=50;let current=1,pending=1,selected=null,fontSize=19;
 const titles=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'];
 const group=n=>Math.floor((n-1)/10)+1;
-
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-
 function makeChapters(){
   var el=document.getElementById('chapterList');
   for(var i=1;i<=total;i++){
@@ -258,7 +250,6 @@ async function markInlineComments(){
     });
   }catch(e){console.error(e)}
 }
-
 /* ---------- Settings ---------- */
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
 function setBg(v){document.documentElement.style.setProperty('--paper',v);lsSet('gh_bg',v)}
