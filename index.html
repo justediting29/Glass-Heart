@@ -78,14 +78,13 @@ if (!session) {
 alert('Attempting anonymous sign-in');
 const result = await db.auth.signInAnonymously();
 if (result.error) {
-  alert('SUPABASE ERROR: ' + result.error.message);
-  throw result.error;
+alert('SUPABASE ERROR: ' + result.error.message);
+throw result.error;
 }
 alert(
 'LOGIN BERHASIL! USER ID: ' +
 result.data.user.id
 );
-session = result.data.session;
 session = result.data.session;
 }
 const user = session.user;
