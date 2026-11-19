@@ -75,8 +75,8 @@ let { data, error } = await db.auth.getSession();
 if (error) throw error;
 let session = data.session;
 if (!session) {
-const result = await db.auth.signInAnonymously();
 alert('Attempting anonymous sign-in');
+const result = await db.auth.signInAnonymously();
 if (result.error) throw result.error;
 session = result.data.session;
 }
