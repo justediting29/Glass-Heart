@@ -47,8 +47,11 @@ function openChapter(n){if(n<1||n>total)return;pending=n;let g=group(n);let unlo
 function unlock(){let g=group(pending);if(document.getElementById('password').value!==`password${g}`){document.getElementById('gateError').textContent='That password does not match.';return}let u=JSON.parse(localStorage.getItem('gh_unlocked')||'[]');if(!u.includes(g))u.push(g);localStorage.setItem('gh_unlocked',JSON.stringify(u));document.getElementById('gate').style.display='none';renderChapter(pending)}
 function renderChapter(n){current=n;document.getElementById('home').style.display='none';document.getElementById('reader').style.display='block';document.getElementById('chapterKicker').textContent=`GLASS HEART · CHAPTER ${String(n).padStart(2,'0')}`;document.getElementById('chapterTitle').textContent=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'][(n-1)%5];document.getElementById('progressLabel').textContent=`CHAPTER ${n} OF ${total}`;document.getElementById('prev').style.visibility=n===1?'hidden':'visible';document.getElementById('next').style.visibility=n===total?'hidden':'visible';
 let saved=localStorage.getItem('gh_progress');localStorage.setItem('gh_progress',JSON.stringify({chapter:n,scroll:0}));
-let paragraphs=['The rain had been falling since morning, soft enough to sound like someone turning the pages of a book in the next room. Mara stood by the window and watched the city blur at its edges.','There were things she had promised herself she would never keep. Old receipts. Unsent letters. The little glass bird her mother had left on the mantel, one wing caught forever in the light.','She told herself that memory was a room with a door. She could close it whenever she wished. But some evenings, the handle turned from the other side.','On the table lay an envelope with no return address. Her name was written across it in a hand she had spent years trying to forget.','For a long moment, she did nothing. Then she set down her cup, as carefully as if the smallest sound might change what waited inside.'];let prose=document.getElementById('prose');prose.innerHTML='';for(let j=0;j<12;j++){let p=document.createElement('p');let sentence=paragraphs[(j+n)%paragraphs.length];let id=`${n}_${j}`;p.innerHTML=`<span class="sentence" data-id="${id}" onclick="openInline('${id}',this)">${sentence}</span>`;if(getInline(id).length)p.querySelector('span').classList.add('has-comments');prose.appendChild(p)}
-renderComments();window.scrollTo(0,0)}
+let paragraphs=['The rain had been falling since morning, soft enough to sound like someone turning the pages of a book in the next room. Mara stood by the window and watched the city blur at its edges.','There were things she had promised herself she would never keep. Old receipts. Unsent letters. The little glass bird her mother had left on the mantel, one wing caught forever in the light.','She told herself that memory was a room with a door. She could close it whenever she wished. But some evenings, the handle turned from the other side.','On the table lay an envelope with no return address. Her name was written across it in a hand she had spent years trying to forget.','For a long moment, she did nothing. Then she set down her cup, as carefully as if the smallest sound might change what waited inside.'];let prose=document.getElementById('prose');prose.innerHTML='';for(let j=0;j<12;j++){let p=document.createElement('p');let sentence=paragraphs[(j+n)%paragraphs.length];let id=`${n}_${j}`;p.innerHTML=`<span class="sentence" data-id="${id}" onclick="openInline('${id}',this)">${sentence}</span>`;prose.appendChild(p)}
+renderComments();
+markInlineComments();
+window.scrollTo(0,0);
+}
 async function getChapterComments(passageId = null) {
 await window.ghDBReady;
 let query = window.ghDB
@@ -231,7 +234,36 @@ return;
 }
 renderInline();
 }
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function markInlineComments() {
+  try {
+    await window.ghDBReady;
+    const { data, error } = await window.ghDB
+      .from('reader_comments')
+      .select('passage_id')
+      .eq('chapter', current)
+      .not('passage_id', 'is', null);
+    if (error) throw error;
+    (data || []).forEach(c => {
+      const sentence = document.querySelector(
+        `[data-id="${c.passage_id}"]`
+      );
+      if (sentence) {
+        sentence.classList.add('has-comments');
+      }
+    });
+  } catch (error) {
+    console.error('Discussion marker error:', error);
+  }
+}
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[c]));
+}
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);localStorage.setItem('gh_font',v)}function setBg(v){document.documentElement.style.setProperty('--paper',v);localStorage.setItem('gh_bg',v)}function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');localStorage.setItem('gh_size',fontSize)}
 function restore(){let p=JSON.parse(localStorage.getItem('gh_progress')||'null');if(p&&p.chapter){/* progress is available to resume from the homepage */let b=document.querySelector('.hero .primary');b.textContent=`Continue reading · Chapter ${p.chapter} →`;b.onclick=()=>openChapter(p.chapter)}let f=localStorage.getItem('gh_font');if(f){document.getElementById('font').value=f;setFont(f)}let bg=localStorage.getItem('gh_bg');if(bg){document.getElementById('bg').value=bg;setBg(bg)}let sz=localStorage.getItem('gh_size');if(sz){fontSize=+sz;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}}
 async function initializeSupabase() {
@@ -246,12 +278,25 @@ console.log('Glass Heart database connected!');
 window.ghDBReady = initializeSupabase();
 makeChapters();
 restore();
-initializeSupabase().catch(error => {
-console.error('Supabase connection error:', error);
-alert(
-'ERROR TYPE: ' + (error.name || 'Unknown') +
-'\nERROR MESSAGE: ' + (error.message || 'No message') +
-'\nERROR CODE: ' + (error.code || 'No code')
-);
+async function initializeSupabase() {
+  const SUPABASE_URL =
+    'https://qswgpgjokzixzofylikr.supabase.co';
+  const SUPABASE_KEY =
+    'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
+  window.ghDB = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+  console.log('Glass Heart database connected!');
+}
+window.ghDBReady = initializeSupabase();
+makeChapters();
+restore();
+window.ghDBReady.catch(error => {
+  console.error('Supabase connection error:', error);
+  alert(
+    'SUPABASE ERROR: ' +
+    (error.message || 'Unknown error')
+  );
 });
 </script></body></html>
