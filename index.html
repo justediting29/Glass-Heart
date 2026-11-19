@@ -78,15 +78,44 @@ localStorage.setItem('gh_name', name.trim());
 return name;
 }
 async function saveComment(text, passageId = null, parentId = null) {
-const name =
-document.getElementById(
-passageId === null ? 'commentName' : 'inlineName'
-).value.trim() || readerName();
-if (!name || !text.trim()) return;
-await window.ghDBReady;
-const { error } = await window.ghDB
-.from('reader_comments')
-.insert({
+  const inputId = passageId === null
+    ? 'commentName'
+    : 'inlineName';
+  const name =
+    document.getElementById(inputId).value.trim()
+    || readerName();
+  if (!name || !text.trim()) return null;
+  try {
+    await window.ghDBReady;
+    const { data, error } = await window.ghDB
+      .from('reader_comments')
+      .insert({
+        chapter: current,
+        passage_id: passageId,
+        parent_id: parentId,
+        author_name: name,
+        body: text.trim()
+      })
+      .select()
+      .single();
+    if (error) {
+      console.error('Comment insert error:', error);
+      alert('GAGAL SIMPAN: ' + error.message);
+      return null;
+    }
+    console.log('COMMENT SAVED:', data);
+    alert(
+      'Komentar berhasil disimpan ke Supabase!\nID: '
+      + data.id
+    );
+    localStorage.setItem('gh_name', name);
+    return name;
+  } catch (error) {
+    console.error(error);
+    alert('SUPABASE ERROR: ' + error.message);
+    return null;
+  }
+}
 chapter: current,
 passage_id: passageId,
 parent_id: parentId,
