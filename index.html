@@ -278,20 +278,6 @@ console.log('Glass Heart database connected!');
 window.ghDBReady = initializeSupabase();
 makeChapters();
 restore();
-async function initializeSupabase() {
-  const SUPABASE_URL =
-    'https://qswgpgjokzixzofylikr.supabase.co';
-  const SUPABASE_KEY =
-    'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
-  window.ghDB = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-  console.log('Glass Heart database connected!');
-}
-window.ghDBReady = initializeSupabase();
-makeChapters();
-restore();
 window.ghDBReady.catch(error => {
   console.error('Supabase connection error:', error);
   alert(
