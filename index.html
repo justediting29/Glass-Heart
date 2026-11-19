@@ -49,17 +49,188 @@ function renderChapter(n){current=n;document.getElementById('home').style.displa
 let saved=localStorage.getItem('gh_progress');localStorage.setItem('gh_progress',JSON.stringify({chapter:n,scroll:0}));
 let paragraphs=['The rain had been falling since morning, soft enough to sound like someone turning the pages of a book in the next room. Mara stood by the window and watched the city blur at its edges.','There were things she had promised herself she would never keep. Old receipts. Unsent letters. The little glass bird her mother had left on the mantel, one wing caught forever in the light.','She told herself that memory was a room with a door. She could close it whenever she wished. But some evenings, the handle turned from the other side.','On the table lay an envelope with no return address. Her name was written across it in a hand she had spent years trying to forget.','For a long moment, she did nothing. Then she set down her cup, as carefully as if the smallest sound might change what waited inside.'];let prose=document.getElementById('prose');prose.innerHTML='';for(let j=0;j<12;j++){let p=document.createElement('p');let sentence=paragraphs[(j+n)%paragraphs.length];let id=`${n}_${j}`;p.innerHTML=`<span class="sentence" data-id="${id}" onclick="openInline('${id}',this)">${sentence}</span>`;if(getInline(id).length)p.querySelector('span').classList.add('has-comments');prose.appendChild(p)}
 renderComments();window.scrollTo(0,0)}
-function getData(k){return JSON.parse(localStorage.getItem(k)||'[]')}function setData(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function renderComments(){let list=document.getElementById('commentList');list.innerHTML='';getData(key('comments',current)).forEach((c,i)=>{let d=document.createElement('div');d.className='comment';d.innerHTML=`<strong>${esc(c.name)}</strong><small>${new Date(c.time).toLocaleString()}</small><p>${esc(c.text)}</p><button class="text-btn" onclick="replyTo(${i})">Reply</button><div id="replies${i}">${(c.replies||[]).map(r=>`<div class="reply"><strong>${esc(r.name)}</strong><p>${esc(r.text)}</p></div>`).join('')}</div>`;list.appendChild(d)})}
-function readerName(){let n=localStorage.getItem('gh_name');if(!n){n=prompt('Choose your reader name');if(!n||!n.trim())return null;localStorage.setItem('gh_name',n.trim())}return n}
-function postComment(){let name=document.getElementById('commentName').value.trim()||readerName(),text=document.getElementById('commentText').value.trim();if(!name||!text)return;localStorage.setItem('gh_name',name);let a=getData(key('comments',current));a.push({name,text,time:Date.now(),replies:[]});setData(key('comments',current),a);document.getElementById('commentName').value=name;document.getElementById('commentText').value='';renderComments()}
-function replyTo(i){let name=readerName(),text=prompt('Write your reply');if(!name||!text)return;let a=getData(key('comments',current));a[i].replies.push({name,text});setData(key('comments',current),a);renderComments()}
-function getInline(id){return getData('gh_inline_'+id)}
-function openInline(id,el){selected=id;document.getElementById('selectedQuote').textContent=el.textContent;document.getElementById('inlinePanel').style.display='block';renderInline()}
-function closeInline(){document.getElementById('inlinePanel').style.display='none'}
-function renderInline(){let l=document.getElementById('inlineList');l.innerHTML='';getInline(selected).forEach((c,i)=>{let d=document.createElement('div');d.className='comment';d.innerHTML=`<strong>${esc(c.name)}</strong><p>${esc(c.text)}</p><button class="text-btn" onclick="inlineReply(${i})">Reply</button>${(c.replies||[]).map(r=>`<div class="reply"><strong>${esc(r.name)}</strong><p>${esc(r.text)}</p></div>`).join('')}`;l.appendChild(d)})}
-function postInline(){let name=document.getElementById('inlineName').value.trim()||readerName(),text=document.getElementById('inlineText').value.trim();if(!name||!text)return;localStorage.setItem('gh_name',name);let a=getInline(selected);a.push({name,text,replies:[]});setData('gh_inline_'+selected,a);document.querySelector(`[data-id="${selected}"]`).classList.add('has-comments');document.getElementById('inlineName').value=name;document.getElementById('inlineText').value='';renderInline()}
-function inlineReply(i){let name=readerName(),text=prompt('Write your reply');if(!name||!text)return;let a=getInline(selected);a[i].replies.push({name,text});setData('gh_inline_'+selected,a);renderInline()}
+async function getChapterComments(passageId = null) {
+await window.ghDBReady;
+let query = window.ghDB
+.from('reader_comments')
+.select('*')
+.eq('chapter', current)
+.order('created_at', { ascending: true });
+if (passageId === null) {
+query = query.is('passage_id', null);
+} else {
+query = query.eq('passage_id', passageId);
+}
+const { data, error } = await query;
+if (error) throw error;
+return data || [];
+}
+function readerName() {
+let name = localStorage.getItem('gh_name');
+if (!name) {
+name = prompt('Choose your reader name');
+if (!name || !name.trim()) return null;
+localStorage.setItem('gh_name', name.trim());
+}
+return name;
+}
+async function saveComment(text, passageId = null, parentId = null) {
+const name =
+document.getElementById(
+passageId === null ? 'commentName' : 'inlineName'
+).value.trim() || readerName();
+if (!name || !text.trim()) return;
+await window.ghDBReady;
+const { error } = await window.ghDB
+.from('reader_comments')
+.insert({
+chapter: current,
+passage_id: passageId,
+parent_id: parentId,
+author_name: name,
+body: text.trim()
+});
+if (error) {
+alert('Gagal mengirim komentar: ' + error.message);
+return;
+}
+localStorage.setItem('gh_name', name);
+return name;
+}
+async function renderComments() {
+const list = document.getElementById('commentList');
+list.innerHTML = 'Loading comments...';
+try {
+const comments = await getChapterComments(null);
+const roots = comments.filter(c => !c.parent_id);
+list.innerHTML = '';
+roots.forEach(c => {
+const replies = comments.filter(r => r.parent_id === c.id);
+const d = document.createElement('div');
+d.className = 'comment';
+d.innerHTML = `
+<strong>${esc(c.author_name || 'Reader')}</strong>
+<small>${new Date(c.created_at).toLocaleString()}</small>
+<p>${esc(c.body)}</p>
+<button class="text-btn" onclick="replyTo('${c.id}')">Reply</button>
+<div>
+${replies.map(r => `
+<div class="reply">
+<strong>${esc(r.author_name || 'Reader')}</strong>
+<small>${new Date(r.created_at).toLocaleString()}</small>
+<p>${esc(r.body)}</p>
+</div>
+`).join('')}
+</div>
+`;
+list.appendChild(d);
+});
+if (!roots.length) list.textContent = 'No comments yet. Be the first to leave a thought.';
+} catch (error) {
+list.textContent = 'Could not load comments: ' + error.message;
+}
+}
+async function postComment() {
+const text = document.getElementById('commentText').value.trim();
+if (!text) return;
+const name = await saveComment(text);
+if (!name) return;
+document.getElementById('commentName').value = name;
+document.getElementById('commentText').value = '';
+renderComments();
+}
+async function replyTo(parentId) {
+const name = readerName();
+const text = prompt('Write your reply');
+if (!name || !text || !text.trim()) return;
+await window.ghDBReady;
+const { error } = await window.ghDB
+.from('reader_comments')
+.insert({
+chapter: current,
+passage_id: null,
+parent_id: parentId,
+author_name: name,
+body: text.trim()
+});
+if (error) {
+alert('Gagal mengirim balasan: ' + error.message);
+return;
+}
+renderComments();
+}
+async function openInline(id, el) {
+selected = id;
+document.getElementById('selectedQuote').textContent = el.textContent;
+document.getElementById('inlinePanel').style.display = 'block';
+renderInline();
+}
+function closeInline() {
+document.getElementById('inlinePanel').style.display = 'none';
+}
+async function renderInline() {
+const list = document.getElementById('inlineList');
+list.textContent = 'Loading discussion...';
+try {
+const comments = await getChapterComments(selected);
+const roots = comments.filter(c => !c.parent_id);
+list.innerHTML = '';
+roots.forEach(c => {
+const replies = comments.filter(r => r.parent_id === c.id);
+const d = document.createElement('div');
+d.className = 'comment';
+d.innerHTML = `
+<strong>${esc(c.author_name || 'Reader')}</strong>
+<small>${new Date(c.created_at).toLocaleString()}</small>
+<p>${esc(c.body)}</p>
+<button class="text-btn" onclick="inlineReply('${c.id}')">Reply</button>
+${replies.map(r => `
+<div class="reply">
+<strong>${esc(r.author_name || 'Reader')}</strong>
+<p>${esc(r.body)}</p>
+</div>
+`).join('')}
+`;
+list.appendChild(d);
+});
+if (!roots.length) list.textContent = 'No discussion yet.';
+} catch (error) {
+list.textContent = 'Could not load discussion: ' + error.message;
+}
+}
+async function postInline() {
+const text = document.getElementById('inlineText').value.trim();
+if (!text) return;
+const name = await saveComment(text, selected);
+if (!name) return;
+document.getElementById('inlineName').value = name;
+document.getElementById('inlineText').value = '';
+const sentence = document.querySelector(
+`[data-id="${selected}"]`
+);
+if (sentence) sentence.classList.add('has-comments');
+renderInline();
+}
+async function inlineReply(parentId) {
+const name = readerName();
+const text = prompt('Write your reply');
+if (!name || !text || !text.trim()) return;
+await window.ghDBReady;
+const { error } = await window.ghDB
+.from('reader_comments')
+.insert({
+chapter: current,
+passage_id: selected,
+parent_id: parentId,
+author_name: name,
+body: text.trim()
+});
+if (error) {
+alert('Gagal mengirim balasan: ' + error.message);
+return;
+}
+renderInline();
+}
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);localStorage.setItem('gh_font',v)}function setBg(v){document.documentElement.style.setProperty('--paper',v);localStorage.setItem('gh_bg',v)}function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');localStorage.setItem('gh_size',fontSize)}
 function restore(){let p=JSON.parse(localStorage.getItem('gh_progress')||'null');if(p&&p.chapter){/* progress is available to resume from the homepage */let b=document.querySelector('.hero .primary');b.textContent=`Continue reading · Chapter ${p.chapter} →`;b.onclick=()=>openChapter(p.chapter)}let f=localStorage.getItem('gh_font');if(f){document.getElementById('font').value=f;setFont(f)}let bg=localStorage.getItem('gh_bg');if(bg){document.getElementById('bg').value=bg;setBg(bg)}let sz=localStorage.getItem('gh_size');if(sz){fontSize=+sz;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}}
