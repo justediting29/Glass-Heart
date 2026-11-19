@@ -90,7 +90,6 @@ async function initializeSupabase() {
 }
 makeChapters();
 restore();
-
 initializeSupabase().catch(error => {
   console.error('Supabase connection error:', error);
   alert('Unable to connect to the comment server. Please refresh.');
