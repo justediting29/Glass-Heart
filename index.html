@@ -20,6 +20,10 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 @media(max-width:760px){main{padding-top:35px}.hero{margin:40px auto 60px}.chapter-list{grid-template-columns:1fr}.reader-grid{display:block}.side{padding-top:30px}.settings{position:static}.story{padding-top:38px}.story h1{font-size:32px}.topbar{padding:0 18px}}
 </style></head>
 <body>
+<script>
+window.onerror=function(m,s,l){alert('JS ERROR: '+m+' (baris '+l+')')};
+window.addEventListener('unhandledrejection',function(e){alert('PROMISE ERROR: '+(e.reason&&e.reason.message||e.reason))});
+</script>
 <header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><a href="#chapters" onclick="home()">Chapters</a></header>
 <main id="home">
 <section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
@@ -41,6 +45,10 @@ const SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';   // Project Se
 const SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';                       // anon public key (BUKAN service_role!)
 window.ghDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 window.ghDBReady = Promise.resolve();
+alert('Library Supabase: ' + (window.supabase ? 'OK' : 'TIDAK TERLOAD'));
+window.ghDB.from('reader_comments').select('id').limit(1).then(function(r){
+  alert(r.error ? 'TES GAGAL: ' + r.error.message : 'TES BERHASIL, koneksi ke tabel OK');
+});
 const total=50;let current=1, pending=1, selected=null, fontSize=19;
 const group=n=>Math.floor((n-1)/10)+1;
 const key=(kind,n)=>`gh_${kind}_${n}`;
