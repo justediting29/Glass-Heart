@@ -63,6 +63,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);localStorage.setItem('gh_font',v)}function setBg(v){document.documentElement.style.setProperty('--paper',v);localStorage.setItem('gh_bg',v)}function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');localStorage.setItem('gh_size',fontSize)}
 function restore(){let p=JSON.parse(localStorage.getItem('gh_progress')||'null');if(p&&p.chapter){/* progress is available to resume from the homepage */let b=document.querySelector('.hero .primary');b.textContent=`Continue reading · Chapter ${p.chapter} →`;b.onclick=()=>openChapter(p.chapter)}let f=localStorage.getItem('gh_font');if(f){document.getElementById('font').value=f;setFont(f)}let bg=localStorage.getItem('gh_bg');if(bg){document.getElementById('bg').value=bg;setBg(bg)}let sz=localStorage.getItem('gh_size');if(sz){fontSize=+sz;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}}
 async function initializeSupabase() {
+alert('Supabase initialization started');
 const SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
 const db = window.supabase.createClient(
@@ -74,6 +75,7 @@ if (error) throw error;
 let session = data.session;
 if (!session) {
 const result = await db.auth.signInAnonymously();
+alert('Attempting anonymous sign-in');
 if (result.error) throw result.error;
 session = result.data.session;
 }
