@@ -37,7 +37,10 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <div class="inline-panel" id="inlinePanel"><button class="text-btn" style="float:right" onclick="closeInline()">Close ×</button><h3>Passage discussion</h3><blockquote id="selectedQuote"></blockquote><div id="inlineList"></div><input id="inlineName" placeholder="Your reader name"><textarea id="inlineText" rows="2" placeholder="Comment on this passage…"></textarea><button class="primary" onclick="postInline()">Add comment</button></div>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <script>
-alert('JAVASCRIPT GLASS HEART AKTIF');
+const SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';   // Project Settings → API → Project URL
+const SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';                       // anon public key (BUKAN service_role!)
+window.ghDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+window.ghDBReady = Promise.resolve();
 const total=50;let current=1, pending=1, selected=null, fontSize=19;
 const group=n=>Math.floor((n-1)/10)+1;
 const key=(kind,n)=>`gh_${kind}_${n}`;
@@ -78,90 +81,30 @@ localStorage.setItem('gh_name', name.trim());
 return name;
 }
 async function saveComment(text, passageId = null, parentId = null) {
-  const inputId = passageId === null
-    ? 'commentName'
-    : 'inlineName';
-  const name =
-    document.getElementById(inputId).value.trim()
-    || readerName();
+  const inputId = passageId === null ? 'commentName' : 'inlineName';
+  const name = document.getElementById(inputId).value.trim() || readerName();
   if (!name || !text.trim()) return null;
   try {
     await window.ghDBReady;
-    const { data, error } = await window.ghDB
-      .from('reader_comments')
-      .insert({
-        chapter: current,
-        passage_id: passageId,
-        parent_id: parentId,
-        author_name: name,
-        body: text.trim()
-      })
-      .select()
-      .single();
+    const { error } = await window.ghDB.from('reader_comments').insert({
+      chapter: current,
+      passage_id: passageId,
+      parent_id: parentId,
+      author_name: name,
+      body: text.trim()
+    });
     if (error) {
-      console.error('Comment insert error:', error);
-      alert('GAGAL SIMPAN: ' + error.message);
+      console.error(error);
+      alert('Gagal mengirim komentar: ' + error.message);
       return null;
     }
-    console.log('COMMENT SAVED:', data);
-    alert(
-      'Komentar berhasil disimpan ke Supabase!\nID: '
-      + data.id
-    );
     localStorage.setItem('gh_name', name);
     return name;
-  } catch (error) {
-    console.error(error);
-    alert('SUPABASE ERROR: ' + error.message);
+  } catch (e) {
+    console.error(e);
+    alert('Error: ' + e.message);
     return null;
   }
-}
-chapter: current,
-passage_id: passageId,
-parent_id: parentId,
-author_name: name,
-body: text.trim()
-});
-if (error) {
-alert('Gagal mengirim komentar: ' + error.message);
-return;
-}
-localStorage.setItem('gh_name', name);
-return name;
-}
-async function renderComments() {
-const list = document.getElementById('commentList');
-list.innerHTML = 'Loading comments...';
-try {
-const comments = await getChapterComments(null);
-const roots = comments.filter(c => !c.parent_id);
-list.innerHTML = '';
-roots.forEach(c => {
-const replies = comments.filter(r => r.parent_id === c.id);
-const d = document.createElement('div');
-d.className = 'comment';
-d.innerHTML = `
-<strong>${esc(c.author_name || 'Reader')}</strong>
-<small>${new Date(c.created_at).toLocaleString()}</small>
-<p>${esc(c.body)}</p>
-<button class="text-btn" onclick="replyTo('${c.id}')">Reply</button>
-<div>
-${replies.map(r => `
-<div class="reply">
-<strong>${esc(r.author_name || 'Reader')}</strong>
-<small>${new Date(r.created_at).toLocaleString()}</small>
-<p>${esc(r.body)}</p>
-</div>
-`).join('')}
-</div>
-`;
-list.appendChild(d);
-});
-if (!roots.length) list.textContent = 'No comments yet. Be the first to leave a thought.';
-} catch (error) {
-list.textContent = 'Could not load comments: ' + error.message;
-}
-}
 async function postComment() {
 const text = document.getElementById('commentText').value.trim();
 if (!text) return;
@@ -294,24 +237,16 @@ function esc(s) {
   }[c]));
 }
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);localStorage.setItem('gh_font',v)}function setBg(v){document.documentElement.style.setProperty('--paper',v);localStorage.setItem('gh_bg',v)}function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');localStorage.setItem('gh_size',fontSize)}
-function restore(){let p=JSON.parse(localStorage.getItem('gh_progress')||'null');if(p&&p.chapter){/* progress is available to resume from the homepage */let b=document.querySelector('.hero .primary');b.textContent=`Continue reading · Chapter ${p.chapter} →`;b.onclick=()=>openChapter(p.chapter)}let f=localStorage.getItem('gh_font');if(f){document.getElementById('font').value=f;setFont(f)}let bg=localStorage.getItem('gh_bg');if(bg){document.getElementById('bg').value=bg;setBg(bg)}let sz=localStorage.getItem('gh_size');if(sz){fontSize=+sz;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}}
-async function initializeSupabase() {
-const SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
-window.ghDB = window.supabase.createClient(
-SUPABASE_URL,
-SUPABASE_KEY
-);
-console.log('Glass Heart database connected!');
+function restore(){
+  const f=localStorage.getItem('gh_font');
+  if(f){setFont(f);document.getElementById('font').value=f}
+  const b=localStorage.getItem('gh_bg');
+  if(b){setBg(b);document.getElementById('bg').value=b}
+  const s=parseInt(localStorage.getItem('gh_size'));
+  if(s){fontSize=s;document.documentElement.style.setProperty('--reader-size',s+'px')}
 }
-window.ghDBReady = initializeSupabase();
 makeChapters();
 restore();
-window.ghDBReady.catch(error => {
-  console.error('Supabase connection error:', error);
-  alert(
-    'SUPABASE ERROR: ' +
-    (error.message || 'Unknown error')
-  );
-});
-</script></body></html>
+</script>
+</body>
+</html>
