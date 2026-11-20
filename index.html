@@ -63,7 +63,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
   <button type="button" class="primary" id="btnLogin" onclick="doAuth('in')">Login</button>
 <button type="button" class="primary" id="btnSignup" onclick="doAuth('up')" style="background:#8b7664;margin-top:8px">Sign Up</button>
   <p id="authError" style="color:#a34d40;font-size:12px"></p>
-  <button class="text-btn" onclick="document.getElementById('authGate').style.display='none'">Tutup</button>
+  <button class="text-btn" onclick="document.getElementById('authGate').style.display='none'">Close</button>
 </div></div>
 
 <div class="gate" id="profileModal"><div class="gate-card">
@@ -71,10 +71,10 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
   <img id="avatarPreview" class="avatar big" alt="">
   <input id="avatarFile" type="file" accept="image/*">
   <input id="profName" placeholder="Username">
-  <button class="primary" onclick="saveProfile()">Simpan</button>
+  <button class="primary" onclick="saveProfile()">Save</button>
   <button class="text-btn" onclick="logout()">Logout</button>
   <p id="profMsg" style="font-size:12px"></p>
-  <button class="text-btn" onclick="document.getElementById('profileModal').style.display='none'">Tutup</button>
+  <button class="text-btn" onclick="document.getElementById('profileModal').style.display='none'">Close</button>
 </div></div>
 <script>
 /* Supabase configuration */
@@ -168,7 +168,7 @@ async function saveProfile(){
   var r=await db.from('profiles').update({display_name:name,avatar_url:url,updated_at:new Date().toISOString()}).eq('id',me.id);
   if(r.error){msg.textContent=r.error.message;return}
   myProfile.display_name=name;myProfile.avatar_url=url;updateAuthUI();
-  document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;msg.textContent='Tersimpan ✓';
+  document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;msg.textContent='Saved ✓';
 }
 
 /* ---------- CHAPTERS ---------- */
