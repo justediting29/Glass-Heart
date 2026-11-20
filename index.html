@@ -55,9 +55,9 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
   <div class="eyebrow">Silakan masuk</div><h2>Login untuk membaca</h2>
-  <input id="authName" placeholder="Nama pembaca (untuk daftar)">
+  <input id="authName" placeholder="Username">
   <input id="authEmail" type="email" placeholder="Email">
-  <input id="authPass" type="password" placeholder="Password (min. 6 karakter)">
+  <input id="authPass" type="password" placeholder="Password (min. 6 characters)">
   <button class="primary" onclick="doAuth('in')">Login</button>
   <button class="text-btn" onclick="doAuth('up')">Belum punya akun? Daftar</button>
   <p id="authError" style="color:#a34d40;font-size:12px"></p>
@@ -68,7 +68,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
   <div class="eyebrow">Profilmu</div>
   <img id="avatarPreview" class="avatar big" alt="">
   <input id="avatarFile" type="file" accept="image/*">
-  <input id="profName" placeholder="Nama pembaca">
+  <input id="profName" placeholder="Username">
   <button class="primary" onclick="saveProfile()">Simpan</button>
   <button class="text-btn" onclick="logout()">Logout</button>
   <p id="profMsg" style="font-size:12px"></p>
