@@ -60,8 +60,8 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
   <input id="authEmail" type="email" placeholder="Email">
   <input id="authPass" type="password" placeholder="Password (min. 6 characters)">
   <div class="cf-turnstile" data-sitekey="0x4AAAAAAGJy_3xU0GwYu_Ak" data-theme="light"></div>
-  <button class="primary" onclick="doAuth('in')">Login</button>
-  <button class="text-btn" onclick="doAuth('up')">Belum punya akun? Daftar</button>
+  <button type="button" class="primary" id="btnLogin" onclick="doAuth('in')">Login</button>
+<button type="button" class="primary" id="btnSignup" onclick="doAuth('up')" style="background:#8b7664;margin-top:8px">Sign Up</button>
   <p id="authError" style="color:#a34d40;font-size:12px"></p>
   <button class="text-btn" onclick="document.getElementById('authGate').style.display='none'">Tutup</button>
 </div></div>
@@ -133,17 +133,24 @@ function authBtnClick(){
   document.getElementById('profileModal').style.display='flex';
 }
 async function doAuth(mode){
+  var err=document.getElementById('authError');
   var email=document.getElementById('authEmail').value.trim(),pass=document.getElementById('authPass').value;
-  var name=document.getElementById('authName').value.trim(),err=document.getElementById('authError');
-  err.textContent='';
-  var token=(document.querySelector('[name="cf-turnstile-response"]')||{}).value;
-  if(!token){err.textContent='Selesaikan captcha dulu.';return}
-  var r=mode==='up'
-    ?await db.auth.signUp({email:email,password:pass,options:{captchaToken:token,data:{display_name:name||email.split('@')[0]}}})
-    :await db.auth.signInWithPassword({email:email,password:pass,options:{captchaToken:token}});
-  if(window.turnstile)turnstile.reset();
-  if(r.error)err.textContent=r.error.message;
-  else if(mode==='up'&&!r.data.session)err.textContent='Cek email kamu untuk konfirmasi, lalu login.';
+  var name=document.getElementById('authName').value.trim();
+  err.style.color='#a34d40';
+  if(!db){err.textContent='Database belum terhubung. Refresh halaman.';return}
+  if(!email||!pass){err.textContent='Isi email dan password dulu.';return}
+  if(pass.length<6){err.textContent='Password minimal 6 karakter.';return}
+  var b1=document.getElementById('btnLogin'),b2=document.getElementById('btnSignup');
+  b1.disabled=b2.disabled=true;err.textContent='Memproses...';
+  try{
+    var r=mode==='up'
+      ?await db.auth.signUp({email:email,password:pass,options:{data:{display_name:name||email.split('@')[0]}}})
+      :await db.auth.signInWithPassword({email:email,password:pass});
+    if(r.error){err.textContent=r.error.message}
+    else if(mode==='up'&&!r.data.session){err.style.color='#3d6b4a';err.textContent='Akun dibuat. Cek email kamu untuk konfirmasi, lalu login.'}
+    else err.textContent='';
+  }catch(e){err.textContent='Error: '+e.message}
+  b1.disabled=b2.disabled=false;
 }
 async function logout(){await db.auth.signOut();document.getElementById('profileModal').style.display='none'}
 async function saveProfile(){
