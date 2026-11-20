@@ -5,10 +5,10 @@
 <meta name="theme-color" content="#f5f1e9">
 <title>Glass Heart</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<style>
 .sentence {
   display: inline;
 }
-
 .sentence-comment-btn {
   display: inline-flex;
   align-items: center;
@@ -77,21 +77,6 @@
 .sentence-discussion .primary {
   padding: 10px 15px;
 }
-<style>
-:root{--paper:#f5f1e9;--ink:#292923;--muted:#858276;--accent:#8b7664;--line:#e4ded2;--reader-size:19px;--reader-font:Georgia,serif}
-*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif;transition:background .2s,color .2s}
-button,input,textarea,select{font:inherit}button{cursor:pointer}
-#statusBar{position:fixed;top:0;left:0;right:0;z-index:99;padding:8px 12px;font-size:12px;line-height:1.4;display:none;color:#fff;background:#a34d40;word-break:break-word}
-.topbar{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 clamp(20px,6vw,88px);font-size:12px;letter-spacing:.16em;text-transform:uppercase}
-.brand{font-family:Georgia,serif;font-size:17px;letter-spacing:.04em;text-transform:none}.topbar a{color:inherit;text-decoration:none}
-main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted)}
-.hero{max-width:690px;margin:55px auto 85px;text-align:center}.hero h1{font:normal clamp(56px,10vw,104px)/.98 Georgia,serif;letter-spacing:-.065em;margin:20px 0}.subtitle{font:italic 20px Georgia,serif;color:var(--muted);margin:20px 0 28px}.synopsis{font:17px/1.9 Georgia,serif;color:#666257;max-width:570px;margin:0 auto 28px}
-.warnings{font-size:11px;letter-spacing:.07em;color:#8a6258;margin:0 auto 30px}.primary{border:0;background:#34372f;color:#fff;padding:15px 27px;letter-spacing:.12em;text-transform:uppercase;font-size:11px}.primary:hover{background:#625c4f}
-.rule{height:1px;background:var(--line);margin:50px 0}.section-head{display:flex;justify-content:space-between;align-items:end;margin-bottom:20px}.section-head h2{font:normal 29px Georgia,serif;margin:0}.chapter-list{display:grid;grid-template-columns:repeat(2,1fr);gap:0 40px}.chapter-link{display:flex;justify-content:space-between;padding:17px 0;border-bottom:1px solid var(--line);color:inherit;text-decoration:none;font:16px Georgia,serif}.chapter-link small{font:10px Arial,sans-serif;color:var(--muted);letter-spacing:.1em}
-#reader{display:none;max-width:1100px;margin:auto;padding:32px 24px 90px}.reader-top{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line);padding-bottom:18px}.text-btn{border:0;background:none;color:var(--muted);font-size:12px;letter-spacing:.08em}.reader-grid{display:grid;grid-template-columns:minmax(0,720px) 230px;gap:65px;justify-content:center}.story{padding-top:54px}.chapter-kicker{text-align:center;color:var(--muted);font-size:10px;letter-spacing:.2em;text-transform:uppercase}.story h1{text-align:center;font:normal 38px Georgia,serif;margin:14px 0 48px}.prose{font:var(--reader-size)/1.95 var(--reader-font);white-space:normal}.prose p{margin:0 0 1.45em}.side{padding-top:68px}.settings{position:sticky;top:20px;border:1px solid var(--line);padding:19px}.settings h3{font:20px Georgia,serif;margin:0 0 18px}.control{margin:15px 0}.control label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}.control select,.control input[type=color]{width:100%;border:1px solid var(--line);background:transparent;color:inherit;padding:9px}.size-row{display:flex;gap:8px}.size-row button{flex:1;background:none;border:1px solid var(--line);padding:8px;color:inherit}
-.nav-chapters{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:24px 0;margin-top:60px}.comments{margin-top:65px;border-top:1px solid var(--line);padding-top:35px}.comments h2{font:28px Georgia,serif}.comment-form textarea,.comment-form input{width:100%;border:1px solid var(--line);background:transparent;padding:12px;color:inherit;margin:7px 0}.comment{padding:17px 0;border-bottom:1px solid var(--line)}.comment strong{font:16px Georgia,serif}.comment small{color:var(--muted);margin-left:10px}.comment p{font:15px/1.7 Georgia,serif}.reply{margin-left:25px;border-left:1px solid var(--line);padding-left:15px}
-.gate{position:fixed;inset:0;background:#24241fe8;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.gate-card{background:var(--paper);padding:34px;max-width:380px;width:100%;text-align:center}.gate-card h2{font:30px Georgia,serif}.gate-card input{padding:12px;width:100%;border:1px solid var(--line);margin:12px 0}.notice{font-size:11px;line-height:1.6;color:var(--muted);margin-top:24px}
-@media(max-width:760px){main{padding-top:35px}.hero{margin:40px auto 60px}.chapter-list{grid-template-columns:1fr}.reader-grid{display:block}.side{padding-top:30px}.settings{position:static}.story{padding-top:38px}.story h1{font-size:32px}.topbar{padding:0 18px}}
 </style></head>
 <body>
 <div id="statusBar"></div>
