@@ -78,7 +78,7 @@ body.in-story #navChapters{display:inline}
 <section class="hero"><button class="text-btn back-link" onclick="showLibrary()">← Back</button><h1>Broken Doll</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
 <p class="warnings">CONTENT NOTES · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
-<button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
+<button class="primary" onclick="openChapter(41)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
 <div class="rule"></div><section id="chapters"><div class="section-head"><div><h2>Chapters</h2></div><span class="eyebrow">41 — 100</span></div><div class="chapter-list" id="chapterList"></div></section>
 <footer class="site-footer">
   <div class="ft-title">Broken Doll</div>
@@ -140,8 +140,22 @@ try{
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 }catch(e){showStatus(e.message,false)}
 
-const total=50;let current=1,pending=1,fontSize=19;
-const titles=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'];
+let current=41,pending=41,fontSize=19;
+const FIRST=41,LAST=100;
+const titles={
+41:'Blood is What Remains',42:'Room 203',43:'The Weight of Seconds',44:'Scared of the Dead',45:'A Confession in the Dark',
+46:'Warmth in Unexpected Places',47:'At the End of the River',48:'Edge of the Sea',49:'Sunlight Caught in Laughter',50:'Training',
+51:'The Chase',52:'Almost Cornered',53:'Sharing Trust',54:'A Crazy Bitch',55:'Her Secret Plan',
+56:'To Teach a Lesson (1)',57:'To Teach a Lesson (2)',58:'Party of Two',59:'A Hint of Trouble',60:'Painting Competition',
+61:'Announcement',62:'Palimpsest of Self',63:'Her Anger',64:'Captured',65:'Hera',
+66:'To Rescue',67:'Bittersweet Results',68:'Cruelest Kind Of Love',69:'Zeus Vinogradov',70:'Buying a Sister',
+71:'Angel Pills',72:'Entertaining',73:'Marriage Arrangement',74:'Agreement',75:'Morpheus and Hestia',
+76:'Unexpected Truth',77:'His Side of Story',78:'Just to Talk',79:'Locked',80:'Hollow and Trapped',
+81:'Conversation is Useless',82:'Glimpse of a Way Out',83:"Even if it's Extreme",84:'Beneath the Gentle Smile',85:'The Eldest Brother',
+86:'His Strength, Her World',87:'First Gift',88:'A Crush',89:'Jealousy',90:'Where Feelings Met Words',
+91:'Hestia De Luca',92:'Light in Eyes',93:'11,989',94:'The Engagement Party',95:'Hall of Paintings',
+96:'Running Out of Time',97:'Chaos',98:'Change',99:'A Brave Decision',100:'In The Present and To The Future'
+};
 const group=n=>Math.floor((n-1)/10)+1;
 function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
 function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
@@ -256,10 +270,11 @@ async function saveProfile(){
 /* ---------- CHAPTERS ---------- */
 function makeChapters(){
   var el=document.getElementById('chapterList');
-  for(var i=1;i<=total;i++){
+  for(var i=FIRST;i<=LAST;i++){
     (function(i){
       var a=document.createElement('a');a.className='chapter-link';a.href='#chapter-'+i;
-      a.innerHTML='<span>'+String(i).padStart(2,'0')+' &nbsp; '+titles[(i-1)%5]+'</span>';
+      var s=document.createElement('span');s.textContent=i+'   '+titles[i];
+      a.appendChild(s);
       a.onclick=function(e){e.preventDefault();openChapter(i)};
       el.appendChild(a);
     })(i);
@@ -282,7 +297,7 @@ function home(){
   window.scrollTo(0,0);
 }
 function openChapter(n){
-  if(n<1||n>total)return;
+  if(n<FIRST||n>LAST)return;
   if(!me){showAuth();return}
   pending=n;var g=group(n);
   var unlocked=JSON.parse(lsGet('gh_unlocked')||'[]');
@@ -308,10 +323,10 @@ function renderChapter(n){
   document.getElementById('home').style.display='none';
   document.getElementById('reader').style.display='block';
   document.getElementById('chapterKicker').textContent='Broken Doll · CHAPTER '+String(n).padStart(2,'0');
-  document.getElementById('chapterTitle').textContent=titles[(n-1)%5];
-  document.getElementById('progressLabel').textContent='CHAPTER '+n+' OF '+total;
-  document.getElementById('prev').style.visibility=n===1?'hidden':'visible';
-  document.getElementById('next').style.visibility=n===total?'hidden':'visible';
+  document.getElementById('chapterTitle').textContent=titles[n];
+  document.getElementById('progressLabel').textContent='CHAPTER '+n+' OF '+LAST;
+  document.getElementById('prev').style.visibility=n===FIRST?'hidden':'visible';
+  document.getElementById('next').style.visibility=n===LAST?'hidden':'visible';
   lsSet('gh_progress',JSON.stringify({chapter:n,scroll:0}));
 
   var paragraphs=[
