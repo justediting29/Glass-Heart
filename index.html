@@ -290,7 +290,7 @@ async function renderComments(){
 async function postComment(){
   var text=document.getElementById('commentText').value.trim();if(!text)return;
   var name=readerName();
-  if(!name){showStatus('Profil belum siap, coba lagi',false);return}
+  if(!name){showStatus('Silakan login dulu',false);return}
   if(await insertComment(text,null,name,null)){
     document.getElementById('commentText').value='';renderComments();
   }
@@ -361,12 +361,14 @@ async function renderParagraphComments(key,box){
   var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
   var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
   send.onclick=async function(){
-    var text=textarea.value.trim(),name=nameInput.value.trim();
-    if(!text||!name){alert('Please enter your name and comment.');return}
-    send.disabled=true;
-    if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
-    send.disabled=false;
-  };
+  var text=textarea.value.trim(),name=readerName();
+  if(!me){showAuth();return}
+  if(!text){alert('Tulis komentar dulu.');return}
+  if(!name){alert('Profil belum siap, coba lagi sebentar.');return}
+  send.disabled=true;
+  if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
+  send.disabled=false;
+};
   var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
 var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
 send.onclick=async function(){
