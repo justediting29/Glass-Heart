@@ -7,6 +7,8 @@
 <title>Glass Heart</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
+.avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;background:var(--line)}
+.avatar.big{width:96px;height:96px;display:block;margin:14px auto}
 :root{--paper:#f5f1e9;--ink:#292923;--muted:#858276;--accent:#8b7664;--line:#e4ded2;--reader-size:19px;--reader-font:Georgia,serif}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif;transition:background .2s,color .2s}
 button,input,textarea,select{font:inherit}button{cursor:pointer}
@@ -37,7 +39,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 </head>
 <body>
 <div id="statusBar"></div>
-<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><a href="#chapters" onclick="home()">Chapters</a></header>
+<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false">Login</a></span></header>
 <main id="home">
 <section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
@@ -48,9 +50,30 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="document.querySelector('.settings').scrollIntoView({behavior:'smooth'})">Aa Settings</button></div>
 <div class="reader-grid"><article class="story"><div class="chapter-kicker" id="chapterKicker"></div><h1 id="chapterTitle"></h1><div class="prose" id="prose"></div>
 <div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
-<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><input id="commentName" placeholder="Your reader name"><textarea id="commentText" rows="3" placeholder="Leave a thought…"></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
+<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Leave a thought…"></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
 <aside class="side"><div class="settings"><h3>Reading room</h3><div class="control"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div><div class="control"><label>Page colour</label><input type="color" value="#f5f1e9" id="bg" onchange="setBg(this.value)"></div><div class="control"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div></div></aside></div></section>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
+<div class="gate" id="authGate"><div class="gate-card">
+  <div class="eyebrow">Silakan masuk</div><h2>Login untuk membaca</h2>
+  <input id="authName" placeholder="Nama pembaca (untuk daftar)">
+  <input id="authEmail" type="email" placeholder="Email">
+  <input id="authPass" type="password" placeholder="Password (min. 6 karakter)">
+  <button class="primary" onclick="doAuth('in')">Login</button>
+  <button class="text-btn" onclick="doAuth('up')">Belum punya akun? Daftar</button>
+  <p id="authError" style="color:#a34d40;font-size:12px"></p>
+  <button class="text-btn" onclick="document.getElementById('authGate').style.display='none'">Tutup</button>
+</div></div>
+
+<div class="gate" id="profileModal"><div class="gate-card">
+  <div class="eyebrow">Profilmu</div>
+  <img id="avatarPreview" class="avatar big" alt="">
+  <input id="avatarFile" type="file" accept="image/*">
+  <input id="profName" placeholder="Nama pembaca">
+  <button class="primary" onclick="saveProfile()">Simpan</button>
+  <button class="text-btn" onclick="logout()">Logout</button>
+  <p id="profMsg" style="font-size:12px"></p>
+  <button class="text-btn" onclick="document.getElementById('profileModal').style.display='none'">Tutup</button>
+</div></div>
 <script>
 /* Supabase configuration */
 var SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';
@@ -66,6 +89,63 @@ window.addEventListener('unhandledrejection',function(e){showStatus('Promise err
 
 var db=null;
 try{
+var me=null, myProfile=null;
+const FALLBACK_AVATAR='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="%23d9d2c3"/><circle cx="5" cy="4" r="2" fill="%23fff"/><rect x="2" y="7" width="6" height="4" rx="2" fill="%23fff"/></svg>';
+
+function avatarImg(url){var i=document.createElement('img');i.className='avatar';i.src=url||FALLBACK_AVATAR;i.alt='';return i}
+
+db.auth.onAuthStateChange(function(ev,session){
+  setTimeout(async function(){           // setTimeout supaya tidak deadlock
+    me=session?session.user:null;
+    if(me){await loadProfile();document.getElementById('authGate').style.display='none'}
+    else{myProfile=null;home()}
+    updateAuthUI();
+  },0);
+});
+async function loadProfile(){
+  var r=await db.from('profiles').select('*').eq('id',me.id).single();
+  myProfile=r.data||{display_name:me.email.split('@')[0],avatar_url:null};
+}
+function updateAuthUI(){
+  var b=document.getElementById('authBtn');
+  b.textContent=me?(myProfile&&myProfile.display_name||'Profil'):'Login';
+}
+function showAuth(){document.getElementById('authError').textContent='';document.getElementById('authGate').style.display='flex'}
+function authBtnClick(){
+  if(!me)return showAuth();
+  document.getElementById('profName').value=myProfile.display_name||'';
+  document.getElementById('avatarPreview').src=myProfile.avatar_url||FALLBACK_AVATAR;
+  document.getElementById('profMsg').textContent='';
+  document.getElementById('profileModal').style.display='flex';
+}
+async function doAuth(mode){
+  var email=document.getElementById('authEmail').value.trim(),pass=document.getElementById('authPass').value;
+  var name=document.getElementById('authName').value.trim(),err=document.getElementById('authError');
+  err.textContent='';
+  var r=mode==='up'
+    ?await db.auth.signUp({email:email,password:pass,options:{data:{display_name:name||email.split('@')[0]}}})
+    :await db.auth.signInWithPassword({email:email,password:pass});
+  if(r.error)err.textContent=r.error.message;
+  else if(mode==='up'&&!r.data.session)err.textContent='Cek email kamu untuk konfirmasi, lalu login.';
+}
+async function logout(){await db.auth.signOut();document.getElementById('profileModal').style.display='none'}
+async function saveProfile(){
+  var msg=document.getElementById('profMsg'),name=document.getElementById('profName').value.trim(),
+      file=document.getElementById('avatarFile').files[0],url=myProfile.avatar_url;
+  if(!name){msg.textContent='Nama tidak boleh kosong';return}
+  if(file){
+    if(file.size>2*1024*1024){msg.textContent='Maksimal 2 MB';return}
+    var ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+    var path=me.id+'/'+Date.now()+'.'+ext;
+    var up=await db.storage.from('avatars').upload(path,file,{contentType:file.type});
+    if(up.error){msg.textContent='Upload gagal: '+up.error.message;return}
+    url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+  }
+  var r=await db.from('profiles').update({display_name:name,avatar_url:url,updated_at:new Date().toISOString()}).eq('id',me.id);
+  if(r.error){msg.textContent=r.error.message;return}
+  myProfile.display_name=name;myProfile.avatar_url=url;updateAuthUI();
+  document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;msg.textContent='Tersimpan ✓';
+}
   if(!window.supabase) throw new Error('Supabase library failed to load. Check your connection.');
   db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
   db.from('reader_comments').select('id').limit(1).then(function(r){
@@ -100,6 +180,7 @@ function home(){
 }
 function openChapter(n){
   if(n<1||n>total)return;
+  if(!me){showAuth();return}
   pending=n;var g=group(n);
   var unlocked=JSON.parse(lsGet('gh_unlocked')||'[]');
   if(unlocked.indexOf(g)<0){
@@ -167,7 +248,7 @@ async function getChapterComments(){
   var r=await db.from('reader_comments').select('*').eq('chapter',current).is('passage_id',null).is('passage_key',null).order('created_at',{ascending:true});
   if(r.error)throw r.error;return r.data||[];
 }
-function readerName(){
+function readerName(){return myProfile&&myProfile.display_name||null}
   var name=lsGet('gh_name');
   if(!name){name=prompt('Choose your reader name');if(!name||!name.trim())return null;lsSet('gh_name',name.trim())}
   return name;
@@ -189,12 +270,12 @@ async function renderComments(){
     roots.forEach(function(c){
       var replies=comments.filter(function(r){return r.parent_id===c.id});
       var d=document.createElement('div');d.className='comment';
-      var strong=document.createElement('strong');strong.textContent=c.author_name||'Reader';
+      var strong=document.createElement('strong');strong.textContent=(c.profiles&&c.profiles.display_name)||c.author_name||'Reader';
       var small=document.createElement('small');small.textContent=new Date(c.created_at).toLocaleString();
       var p=document.createElement('p');p.textContent=c.body;
       var reply=document.createElement('button');reply.className='text-btn';reply.textContent='Reply';
       reply.onclick=function(){replyTo(c.id)};
-      d.appendChild(strong);d.appendChild(small);d.appendChild(p);d.appendChild(reply);
+      d.appendChild(avatarImg(c.profiles&&c.profiles.avatar_url));d.appendChild(strong);d.appendChild(small);d.appendChild(p);d.appendChild(reply);
       replies.forEach(function(r){
         var rd=document.createElement('div');rd.className='reply';
         var rs=document.createElement('strong');rs.textContent=r.author_name||'Reader';
@@ -208,10 +289,10 @@ async function renderComments(){
 }
 async function postComment(){
   var text=document.getElementById('commentText').value.trim();if(!text)return;
-  var name=document.getElementById('commentName').value.trim()||readerName();
-  if(!name){showStatus('Please enter your reader name first',false);return}
+  var name=readerName();
+  if(!name){showStatus('Profil belum siap, coba lagi',false);return}
   if(await insertComment(text,null,name,null)){
-    document.getElementById('commentName').value=name;document.getElementById('commentText').value='';renderComments();
+    document.getElementById('commentText').value='';renderComments();
   }
 }
 async function replyTo(parentId){
@@ -250,7 +331,7 @@ async function toggleParagraphDiscussion(key,box,btn){
 async function renderParagraphComments(key,box){
   if(!db){box.textContent='Database not connected';return}
   /* also picks up older sentence-level comments (key + "-s-N") so none are lost */
-  var r=await db.from('reader_comments').select('*').eq('chapter',current)
+  var r=await db.from('reader_comments')..select('*, profiles(display_name,avatar_url)').eq('chapter',current)
     .or('passage_key.eq.'+key+',passage_key.like.'+key+'-s-*')
     .order('created_at',{ascending:true});
   if(r.error){box.textContent='Could not load comments: '+r.error.message;return}
@@ -259,7 +340,7 @@ async function renderParagraphComments(key,box){
   if(!roots.length){var empty=document.createElement('p');empty.textContent='No thoughts yet. Be the first to comment.';box.appendChild(empty)}
   roots.forEach(function(c){
     var item=document.createElement('div');item.className='para-comment';
-    var author=document.createElement('strong');author.textContent=c.author_name||'Reader';
+    var author=document.createElement('strong');author.textContent=(c.profiles&&c.profiles.display_name)||c.author_name||'Reader';
     var time=document.createElement('small');time.textContent=' · '+new Date(c.created_at).toLocaleString();
     var body=document.createElement('p');body.textContent=c.body;
     var reply=document.createElement('button');reply.className='text-btn';reply.textContent='Reply';
@@ -268,7 +349,7 @@ async function renderParagraphComments(key,box){
       var text=prompt('Write your reply');if(!text||!text.trim())return;
       if(await insertComment(text,c.id,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
     };
-    item.appendChild(author);item.appendChild(time);item.appendChild(body);item.appendChild(reply);
+    item.appendChild(avatarImg(c.profiles&&c.profiles.avatar_url));item.appendChild(author);item.appendChild(time);item.appendChild(body);item.appendChild(reply);
     comments.filter(function(x){return x.parent_id===c.id}).forEach(function(rc){
       var rb=document.createElement('div');rb.className='reply';
       var ra=document.createElement('strong');ra.textContent=rc.author_name||'Reader';
@@ -286,9 +367,16 @@ async function renderParagraphComments(key,box){
     if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
     send.disabled=false;
   };
-  box.appendChild(nameInput);box.appendChild(textarea);box.appendChild(send);
-}
-
+  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
+var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
+send.onclick=async function(){
+  var text=textarea.value.trim(),name=readerName();
+  if(!text||!name){alert('Tulis komentar dulu.');return}
+  send.disabled=true;
+  if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
+  send.disabled=false;
+};
+box.appendChild(textarea);box.appendChild(send);
 /* Reading settings */
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
 function setBg(v){document.documentElement.style.setProperty('--paper',v);lsSet('gh_bg',v)}
