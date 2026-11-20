@@ -302,7 +302,7 @@ async function insertComment(text,parentId,name,passageKey){
   if(!db){showStatus('Database not connected',false);return false}
   var r=await db.from('reader_comments').insert({
     chapter:current,passage_id:null,passage_key:passageKey||null,parent_id:parentId,
-    author_name:name,body:text.trim()
+        author_name:name,body:text.trim(),user_id:me?me.id:null
   });
   if(r.error){showStatus('Could not save comment: '+r.error.message,false);return false}
   showStatus('Comment saved ✓',true);return true;
