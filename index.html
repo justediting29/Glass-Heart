@@ -59,30 +59,33 @@ select option{color:#292923;background:#fff}
 .lib-author{font:normal clamp(40px,8vw,72px)/1.05 Georgia,serif;letter-spacing:-.04em;margin:18px 0 50px}
 .lib-book{display:inline-block;font:italic 28px Georgia,serif;color:var(--ink);text-decoration:none;padding:14px 34px;border:1px solid var(--line);transition:background .2s,color .2s}
 .lib-book:hover{background:var(--ink);color:var(--paper)}
+#navChapters{display:none}
+body.in-story #navChapters{display:inline}
+.back-link{display:block;margin:0 0 10px;padding:0}
 </style>
 </head>
 <body>
 <div id="statusBar"></div>
-<header class="topbar"><a class="brand" href="#" onclick="showLibrary();return false">Cheryl Zielle</a><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
+<header class="topbar"><a class="brand" href="#" onclick="showLibrary();return false">Cheryl Zielle</a><span><a href="#chapters" id="navChapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
 <main id="library">
 <section class="lib-hero">
   <div class="eyebrow">Stories by</div>
   <h1 class="lib-author">Cheryl Zielle</h1>
   <a href="#" class="lib-book" onclick="home();return false">Broken Doll</a>
 </section>
+</main>
+<main id="home">
+<section class="hero"><button class="text-btn back-link" onclick="showLibrary()">← Back</button><div class="eyebrow">A novel in 50 chapters</div>
+<p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
+<p class="warnings">CONTENT NOTES · GRIEF · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
+<button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
+<div class="rule"></div><section id="chapters"><div class="section-head"><div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
 <footer class="site-footer">
   <div class="ft-title">Broken Doll</div>
   <p>Copyright © 2026 by CherylZielle. All rights reserved.</p>
   <p>This story is an original work by CherylZielle. The characters, events, places, and storyline are products of creative imagination. Any resemblance to actual persons, places, or events is purely coincidental.</p>
   <p>No part of this publication may be reproduced, distributed, or transmitted in any form without prior written permission from the copyright owner.</p>
 </footer>
-</main>
-<main id="home">
-<section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Broken Doll</h1><div class="subtitle">Some things break quietly.</div>
-<p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
-<p class="warnings">CONTENT NOTES · GRIEF · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
-<button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
-<div class="rule"></div><section id="chapters"><div class="section-head"><div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
 </main>
 <section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">Broken Doll</span><button class="text-btn" onclick="toggleSettings()">Aa Settings</button></div>
 <div class="settings-panel" id="settingsPanel">
@@ -263,6 +266,7 @@ function makeChapters(){
   }
 }
 function showLibrary(){
+  document.body.classList.remove('in-story');
   document.getElementById('library').style.display='block';
   document.getElementById('home').style.display='none';
   document.getElementById('reader').style.display='none';
@@ -270,6 +274,7 @@ function showLibrary(){
   window.scrollTo(0,0);
 }
 function home(){
+  document.body.classList.add('in-story');
   document.getElementById('library').style.display='none';
   document.getElementById('home').style.display='block';
   document.getElementById('reader').style.display='none';
@@ -506,6 +511,7 @@ function restore(){
   setBg(lsGet('gh_bg')||'#f5f1e9');
   var s=parseInt(lsGet('gh_size'));if(s){fontSize=s;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}
 }
+showLibrary();
 makeChapters();buildSwatches();restore();
 </script>
 </body>
