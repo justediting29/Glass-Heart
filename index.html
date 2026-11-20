@@ -75,6 +75,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
   <button class="text-btn" onclick="document.getElementById('profileModal').style.display='none'">Tutup</button>
 </div></div>
 <script>
+<script>
 /* Supabase configuration */
 var SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';
 var SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk';
@@ -87,21 +88,33 @@ function showStatus(msg, ok){
 window.onerror=function(m,s,l){showStatus('JS error: '+m+' (line '+l+')',false)};
 window.addEventListener('unhandledrejection',function(e){showStatus('Promise error: '+(e.reason&&e.reason.message||e.reason),false)});
 
-var db=null;
-try{
-var me=null, myProfile=null;
-const FALLBACK_AVATAR='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="%23d9d2c3"/><circle cx="5" cy="4" r="2" fill="%23fff"/><rect x="2" y="7" width="6" height="4" rx="2" fill="%23fff"/></svg>';
+var db=null, me=null, myProfile=null;
+var FALLBACK_AVATAR='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="%23d9d2c3"/><circle cx="5" cy="4" r="2" fill="%23fff"/><rect x="2" y="7" width="6" height="4" rx="2" fill="%23fff"/></svg>';
 
+try{
+  if(!window.supabase) throw new Error('Supabase library failed to load. Check your connection.');
+  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+}catch(e){showStatus(e.message,false)}
+
+const total=50;let current=1,pending=1,fontSize=19;
+const titles=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'];
+const group=n=>Math.floor((n-1)/10)+1;
+function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+
+/* ---------- AUTH & PROFILE ---------- */
 function avatarImg(url){var i=document.createElement('img');i.className='avatar';i.src=url||FALLBACK_AVATAR;i.alt='';return i}
 
-db.auth.onAuthStateChange(function(ev,session){
-  setTimeout(async function(){           // setTimeout supaya tidak deadlock
-    me=session?session.user:null;
-    if(me){await loadProfile();document.getElementById('authGate').style.display='none'}
-    else{myProfile=null;home()}
-    updateAuthUI();
-  },0);
-});
+if(db){
+  db.auth.onAuthStateChange(function(ev,session){
+    setTimeout(async function(){
+      me=session?session.user:null;
+      if(me){await loadProfile();document.getElementById('authGate').style.display='none'}
+      else{myProfile=null;home()}
+      updateAuthUI();
+    },0);
+  });
+}
 async function loadProfile(){
   var r=await db.from('profiles').select('*').eq('id',me.id).single();
   myProfile=r.data||{display_name:me.email.split('@')[0],avatar_url:null};
@@ -146,21 +159,8 @@ async function saveProfile(){
   myProfile.display_name=name;myProfile.avatar_url=url;updateAuthUI();
   document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;msg.textContent='Tersimpan ✓';
 }
-  if(!window.supabase) throw new Error('Supabase library failed to load. Check your connection.');
-  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  db.from('reader_comments').select('id').limit(1).then(function(r){
-    if(r.error) showStatus('Database test failed: '+r.error.message,false);
-    else showStatus('Database connected ✓',true);
-  });
-}catch(e){showStatus(e.message,false)}
 
-const total=50;let current=1,pending=1,fontSize=19;
-const titles=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'];
-const group=n=>Math.floor((n-1)/10)+1;
-function esc(s){return String(s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-
+/* ---------- CHAPTERS ---------- */
 function makeChapters(){
   var el=document.getElementById('chapterList');
   for(var i=1;i<=total;i++){
@@ -200,7 +200,6 @@ function unlock(){
   lsSet('gh_unlocked',JSON.stringify(u));document.getElementById('gate').style.display='none';renderChapter(pending);
 }
 
-/* Render sample story text. Replace this paragraph array with your actual chapter content when ready. */
 function renderChapter(n){
   current=n;
   document.getElementById('home').style.display='none';
@@ -231,7 +230,7 @@ function renderChapter(n){
       var box=document.createElement('div');box.className='para-discussion';
       btn.onclick=function(){toggleParagraphDiscussion(key,box,btn)};
       span.onclick=function(){
-        if(window.getSelection&&String(window.getSelection()).length)return; /* don't open while selecting text */
+        if(window.getSelection&&String(window.getSelection()).length)return;
         toggleParagraphDiscussion(key,box,btn);
       };
       p.appendChild(span);p.appendChild(btn);p.appendChild(box);
@@ -242,17 +241,13 @@ function renderChapter(n){
   renderComments();window.scrollTo(0,0);
 }
 
-/* Chapter-level comments */
+/* ---------- CHAPTER COMMENTS ---------- */
 async function getChapterComments(){
   if(!db)throw new Error('Database not connected');
-  var r=await db.from('reader_comments').select('*').eq('chapter',current).is('passage_id',null).is('passage_key',null).order('created_at',{ascending:true});
+  var r=await db.from('reader_comments').select('*, profiles(display_name,avatar_url)').eq('chapter',current).is('passage_id',null).is('passage_key',null).order('created_at',{ascending:true});
   if(r.error)throw r.error;return r.data||[];
 }
 function readerName(){return myProfile&&myProfile.display_name||null}
-  var name=lsGet('gh_name');
-  if(!name){name=prompt('Choose your reader name');if(!name||!name.trim())return null;lsSet('gh_name',name.trim())}
-  return name;
-}
 async function insertComment(text,parentId,name,passageKey){
   if(!db){showStatus('Database not connected',false);return false}
   var r=await db.from('reader_comments').insert({
@@ -260,7 +255,7 @@ async function insertComment(text,parentId,name,passageKey){
     author_name:name,body:text.trim()
   });
   if(r.error){showStatus('Could not save comment: '+r.error.message,false);return false}
-  lsSet('gh_name',name);showStatus('Comment saved ✓',true);return true;
+  showStatus('Comment saved ✓',true);return true;
 }
 async function renderComments(){
   var list=document.getElementById('commentList');list.textContent='Loading comments...';
@@ -278,7 +273,8 @@ async function renderComments(){
       d.appendChild(avatarImg(c.profiles&&c.profiles.avatar_url));d.appendChild(strong);d.appendChild(small);d.appendChild(p);d.appendChild(reply);
       replies.forEach(function(r){
         var rd=document.createElement('div');rd.className='reply';
-        var rs=document.createElement('strong');rs.textContent=r.author_name||'Reader';
+        rd.appendChild(avatarImg(r.profiles&&r.profiles.avatar_url));
+        var rs=document.createElement('strong');rs.textContent=(r.profiles&&r.profiles.display_name)||r.author_name||'Reader';
         var rp=document.createElement('p');rp.textContent=r.body;
         rd.appendChild(rs);rd.appendChild(rp);d.appendChild(rd);
       });
@@ -301,7 +297,7 @@ async function replyTo(parentId){
   if(await insertComment(text,parentId,name,null))renderComments();
 }
 
-/* Paragraph-level comments */
+/* ---------- PARAGRAPH COMMENTS ---------- */
 function setBadge(btn,count){
   btn.textContent=count>0?String(count):'+';
   btn.classList.toggle('has',count>0);
@@ -330,8 +326,7 @@ async function toggleParagraphDiscussion(key,box,btn){
 }
 async function renderParagraphComments(key,box){
   if(!db){box.textContent='Database not connected';return}
-  /* also picks up older sentence-level comments (key + "-s-N") so none are lost */
-  var r=await db.from('reader_comments')..select('*, profiles(display_name,avatar_url)').eq('chapter',current)
+  var r=await db.from('reader_comments').select('*, profiles(display_name,avatar_url)').eq('chapter',current)
     .or('passage_key.eq.'+key+',passage_key.like.'+key+'-s-*')
     .order('created_at',{ascending:true});
   if(r.error){box.textContent='Could not load comments: '+r.error.message;return}
@@ -352,34 +347,27 @@ async function renderParagraphComments(key,box){
     item.appendChild(avatarImg(c.profiles&&c.profiles.avatar_url));item.appendChild(author);item.appendChild(time);item.appendChild(body);item.appendChild(reply);
     comments.filter(function(x){return x.parent_id===c.id}).forEach(function(rc){
       var rb=document.createElement('div');rb.className='reply';
-      var ra=document.createElement('strong');ra.textContent=rc.author_name||'Reader';
+      rb.appendChild(avatarImg(rc.profiles&&rc.profiles.avatar_url));
+      var ra=document.createElement('strong');ra.textContent=(rc.profiles&&rc.profiles.display_name)||rc.author_name||'Reader';
       var rp=document.createElement('p');rp.textContent=rc.body;rb.appendChild(ra);rb.appendChild(rp);item.appendChild(rb);
     });
     box.appendChild(item);
   });
-  var nameInput=document.createElement('input');nameInput.placeholder='Your reader name';nameInput.value=lsGet('gh_name')||'';
   var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
   var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
   send.onclick=async function(){
-  var text=textarea.value.trim(),name=readerName();
-  if(!me){showAuth();return}
-  if(!text){alert('Tulis komentar dulu.');return}
-  if(!name){alert('Profil belum siap, coba lagi sebentar.');return}
-  send.disabled=true;
-  if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
-  send.disabled=false;
-};
-  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
-var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
-send.onclick=async function(){
-  var text=textarea.value.trim(),name=readerName();
-  if(!text||!name){alert('Tulis komentar dulu.');return}
-  send.disabled=true;
-  if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
-  send.disabled=false;
-};
-box.appendChild(textarea);box.appendChild(send);
-/* Reading settings */
+    var text=textarea.value.trim(),name=readerName();
+    if(!me){showAuth();return}
+    if(!text){alert('Tulis komentar dulu.');return}
+    if(!name){alert('Profil belum siap, coba lagi sebentar.');return}
+    send.disabled=true;
+    if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
+    send.disabled=false;
+  };
+  box.appendChild(textarea);box.appendChild(send);
+}
+
+/* ---------- READING SETTINGS ---------- */
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
 function setBg(v){document.documentElement.style.setProperty('--paper',v);lsSet('gh_bg',v)}
 function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');lsSet('gh_size',fontSize)}
@@ -389,6 +377,7 @@ function restore(){
   var s=parseInt(lsGet('gh_size'));if(s){fontSize=s;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}
 }
 makeChapters();restore();
+</script>
 </script>
 </body>
 </html>
