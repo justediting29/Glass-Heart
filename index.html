@@ -58,7 +58,6 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <div class="gate" id="authGate"><div class="gate-card">
   <div class="eyebrow">Welcome!</div><h2>Reader Area</h2>
   <input id="authName" placeholder="Username">
-  <input id="authEmail" type="email" placeholder="Email">
   <input id="authPass" type="password" placeholder="Password (min. 6 characters)">
   <div class="cf-turnstile" data-sitekey="0x4AAAAAAGJy_3xU0GwYu_Ak" data-theme="light"></div>
   <button type="button" class="primary" id="btnLogin" onclick="doAuth('in')">Login</button>
@@ -141,21 +140,30 @@ function authBtnClick(){
 }
 async function doAuth(mode){
   var err=document.getElementById('authError');
-  var email=document.getElementById('authEmail').value.trim(),pass=document.getElementById('authPass').value;
-  var name=document.getElementById('authName').value.trim();
+  var username=document.getElementById('authName').value.trim(),
+      pass=document.getElementById('authPass').value;
   err.style.color='#a34d40';
-  if(!db){err.textContent='Database belum terhubung. Refresh halaman.';return}
-  if(!email||!pass){err.textContent='Enter your email & password to Sign Up.';return}
-  if(pass.length<6){err.textContent='Password minimal 6 karakter.';return}
+  if(!db){err.textContent='Database not connected. Refresh the page.';return}
+  if(!username||!pass){err.textContent='Enter your username and password.';return}
+  if(pass.length<6){err.textContent='Password must be at least 6 characters.';return}
+
+  var isEmail=username.indexOf('@')>-1;   // lets old email accounts still log in
+  if(mode==='up'&&!/^[A-Za-z0-9_.]{3,20}$/.test(username)){
+    err.textContent='Username: 3-20 characters, only letters, numbers, _ or .';return;
+  }
+  var email=isEmail?username:username.toLowerCase()+'@glassheart.app';
+
   var b1=document.getElementById('btnLogin'),b2=document.getElementById('btnSignup');
-  b1.disabled=b2.disabled=true;err.textContent='Memproses...';
+  b1.disabled=b2.disabled=true;err.textContent='Processing...';
   try{
     var r=mode==='up'
-      ?await db.auth.signUp({email:email,password:pass,options:{data:{display_name:name||email.split('@')[0]}}})
+      ?await db.auth.signUp({email:email,password:pass,options:{data:{display_name:username}}})
       :await db.auth.signInWithPassword({email:email,password:pass});
-    if(r.error){err.textContent=r.error.message}
-    else if(mode==='up'&&!r.data.session){err.style.color='#3d6b4a';err.textContent='Akun dibuat. Cek email kamu untuk konfirmasi, lalu login.'}
-    else err.textContent='';
+    if(r.error){
+      err.textContent=r.error.message==='User already registered'?'That username is already taken.':r.error.message;
+    }else if(mode==='up'&&!r.data.session){
+      err.textContent='Account created. Press Login.';err.style.color='#3d6b4a';
+    }else err.textContent='';
   }catch(e){err.textContent='Error: '+e.message}
   b1.disabled=b2.disabled=false;
 }
