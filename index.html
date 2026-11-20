@@ -37,11 +37,25 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 .para-discussion textarea,.para-discussion input{width:100%;margin:6px 0;padding:10px;border:1px solid var(--line);background:transparent;color:inherit}
 .para-discussion .primary{padding:10px 15px}
 @media(max-width:760px){main{padding-top:35px}.hero{margin:40px auto 60px}.chapter-list{grid-template-columns:1fr}.reader-grid{display:block}.side{padding-top:30px}.settings{position:static}.story{padding-top:38px}.story h1{font-size:32px}.topbar{padding:0 18px}}
+.synopsis{color:var(--muted)}
+.reader-grid{grid-template-columns:minmax(0,720px)}
+.settings-panel{display:none;max-width:720px;margin:16px auto 0;border:1px solid var(--line);padding:16px 18px}
+.settings-panel.open{display:block}
+.sp-row{margin:0 0 14px}.sp-row:last-child{margin-bottom:0}
+.sp-row label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.sp-row select{width:100%;max-width:260px;border:1px solid var(--line);background:transparent;color:inherit;padding:8px}
+.settings-panel .size-row{max-width:160px}
+.swatches{display:flex;flex-wrap:wrap;gap:8px}
+.swatch{width:22px;height:22px;border-radius:50%;padding:0;border:1px solid rgba(128,128,128,.45);cursor:pointer;transition:transform .15s}
+.swatch:hover{transform:scale(1.15)}
+.swatch.active{outline:2px solid var(--accent);outline-offset:2px}
+.swatch-name{margin-top:8px;font-size:11px;color:var(--muted);min-height:14px}
+select option{color:#292923;background:#fff}
 </style>
 </head>
 <body>
 <div id="statusBar"></div>
-<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
+<header class="topbar"><span></span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
 <main id="home">
 <section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
@@ -49,11 +63,16 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
 <div class="rule"></div><section id="chapters"><div class="section-head"><div><div class="eyebrow">The story</div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
 </main>
-<section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="document.querySelector('.settings').scrollIntoView({behavior:'smooth'})">Aa Settings</button></div>
+<section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="toggleSettings()">Aa Settings</button></div>
+<div class="settings-panel" id="settingsPanel">
+  <div class="sp-row"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div>
+  <div class="sp-row"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div>
+  <div class="sp-row"><label>Page colour</label><div class="swatches" id="swatches"></div><div class="swatch-name" id="swatchName"></div></div>
+</div>
 <div class="reader-grid"><article class="story"><div class="chapter-kicker" id="chapterKicker"></div><h1 id="chapterTitle"></h1><div class="prose" id="prose"></div>
 <div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
 <section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Leave a thought…"></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
-<aside class="side"><div class="settings"><h3>Reading room</h3><div class="control"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div><div class="control"><label>Page colour</label><input type="color" value="#f5f1e9" id="bg" onchange="setBg(this.value)"></div><div class="control"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div></div></aside></div></section>
+</div></section>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
   <div class="eyebrow">Welcome!</div><h2>Reader Area</h2>
@@ -336,7 +355,7 @@ async function renderComments(){
 async function postComment(){
   var text=document.getElementById('commentText').value.trim();if(!text)return;
   var name=readerName();
-  if(!name){showStatus('Reader Area',false);return}
+  if(!name){showStatus('Please log in first',false);return}
   if(await insertComment(text,null,name,null)){
     document.getElementById('commentText').value='';renderComments();
   }
@@ -418,15 +437,48 @@ async function renderParagraphComments(key,box){
 }
 
 /* ---------- READING SETTINGS ---------- */
+const PALETTE=[
+['Paper (default)','#f5f1e9'],['Powder Blush','#f4d9d6'],['Soft Blush','#f7e1dd'],['Dusty Rose','#d4a5a5'],
+['Pastel Pink','#f8d7e0'],['Chocolate Plum','#4a2c3a'],['Smoky Rose','#b98a8c'],['Dusty Mauve','#b392a0'],
+['Rosy Taupe','#b79a97'],['Cotton Rose','#f1c9cf'],['Peach Fuzz','#ffbe98'],['Champagne Mist','#f3e5d0'],
+['Almond Cream','#efdcc3'],['Dusty Taupe','#a89284'],['Beige','#e8dcc8'],['Charcoal Brown','#3b302b'],
+['Tan','#c9a77c'],['Ash Brown','#8a7968'],['Honeydew','#e2f0e0'],['Deep Teal','#14505a'],
+['Palm Leaf','#6b8f5e'],['Alice Blue','#e6f0fa'],['Steel Blue','#6f93b3'],['Muted Teal','#6a9a9a'],
+['Sky Reflection','#b9d7ea'],['Powder Blue','#c5dce8'],['Deep Space Blue','#1d2a44'],['Dusty Lavender','#b7a9c9'],
+['Pastel Petal','#eadcf0'],['Blackberry Cream','#5a3a55'],['Lavender','#d9cdee'],['Lilac Ash','#c0b4c4'],
+['Soft Linen','#f2ece1'],['Porcelain','#f6f4f0'],['Pale Slate','#c8ced6'],['Ash Grey','#b5b5b5'],
+['Taupe','#8b7d70'],['Cool Steel','#7f8c99'],['Rosy Granite','#8d7a7f'],['Jet Black','#111111']
+];
+function lum(h){var r=parseInt(h.substr(1,2),16),g=parseInt(h.substr(3,2),16),b=parseInt(h.substr(5,2),16);return(0.299*r+0.587*g+0.114*b)/255}
+function toggleSettings(){document.getElementById('settingsPanel').classList.toggle('open')}
+function buildSwatches(){
+  var box=document.getElementById('swatches');box.innerHTML='';
+  PALETTE.forEach(function(c){
+    var b=document.createElement('button');b.type='button';b.className='swatch';
+    b.style.background=c[1];b.title=c[0];b.dataset.c=c[1];b.setAttribute('aria-label',c[0]);
+    b.onclick=function(){setBg(c[1])};
+    box.appendChild(b);
+  });
+}
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
-function setBg(v){document.documentElement.style.setProperty('--paper',v);lsSet('gh_bg',v)}
+function setBg(v){
+  var s=document.documentElement.style,dark=lum(v)<0.5;
+  s.setProperty('--paper',v);
+  s.setProperty('--ink',dark?'#ece6db':'#292923');            /* soft white or soft black text */
+  s.setProperty('--muted',dark?'#b9b2a6':'#858276');
+  s.setProperty('--line',dark?'rgba(255,255,255,.2)':'rgba(0,0,0,.12)');
+  lsSet('gh_bg',v);
+  document.querySelectorAll('.swatch').forEach(function(b){b.classList.toggle('active',b.dataset.c===v)});
+  var f=PALETTE.find(function(c){return c[1]===v});
+  document.getElementById('swatchName').textContent=f?f[0]:'';
+}
 function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');lsSet('gh_size',fontSize)}
 function restore(){
   var f=lsGet('gh_font');if(f){setFont(f);document.getElementById('font').value=f}
-  var b=lsGet('gh_bg');if(b){setBg(b);document.getElementById('bg').value=b}
+  setBg(lsGet('gh_bg')||'#f5f1e9');
   var s=parseInt(lsGet('gh_size'));if(s){fontSize=s;document.documentElement.style.setProperty('--reader-size',fontSize+'px')}
 }
-makeChapters();restore();
+makeChapters();buildSwatches();restore();
 </script>
 </body>
 </html>
