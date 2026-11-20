@@ -155,7 +155,14 @@ async function doAuth(mode){
 
   var b1=document.getElementById('btnLogin'),b2=document.getElementById('btnSignup');
   b1.disabled=b2.disabled=true;err.textContent='Processing...';
-  try{
+    try{
+    if(mode==='up'){
+      var t=await db.rpc('username_taken',{u:username});
+      if(t.data===true){
+        err.textContent='That username is already taken.';
+        b1.disabled=b2.disabled=false;return;
+      }
+    }
     var r=mode==='up'
       ?await db.auth.signUp({email:email,password:pass,options:{data:{display_name:username}}})
       :await db.auth.signInWithPassword({email:email,password:pass});
@@ -193,7 +200,10 @@ async function saveProfile(){
       url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
     }
     var r=await db.from('profiles').upsert({id:me.id,display_name:name,avatar_url:url,updated_at:new Date().toISOString()}).select().single();
-    if(r.error){msg.textContent='Save failed: '+r.error.message;return}
+        if(r.error){
+      msg.textContent=r.error.code==='23505'?'That username is already taken.':'Save failed: '+r.error.message;
+      return;
+    }
     myProfile=r.data;updateAuthUI();
     document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;
     msg.style.color='#3d6b4a';msg.textContent='Saved ✓';
