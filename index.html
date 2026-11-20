@@ -5,7 +5,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#f5f1e9">
-<title>Glass Heart</title>
+<title>Broken Doll</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
 .avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;background:var(--line)}
@@ -60,7 +60,7 @@ select option{color:#292923;background:#fff}
 <div id="statusBar"></div>
 <header class="topbar"><a class="brand" href="#" onclick="home();return false">Cheryl Zielle</a><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
 <main id="home">
-<section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
+<section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Broken Doll</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
 <p class="warnings">CONTENT NOTES · GRIEF · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
 <button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
@@ -72,7 +72,7 @@ select option{color:#292923;background:#fff}
   <p>No part of this publication may be reproduced, distributed, or transmitted in any form without prior written permission from the copyright owner.</p>
 </footer>
 </main>
-<section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="toggleSettings()">Aa Settings</button></div>
+<section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">Broken Doll</span><button class="text-btn" onclick="toggleSettings()">Aa Settings</button></div>
 <div class="settings-panel" id="settingsPanel">
   <div class="sp-row"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div>
   <div class="sp-row"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div>
@@ -282,7 +282,7 @@ function renderChapter(n){
   current=n;
   document.getElementById('home').style.display='none';
   document.getElementById('reader').style.display='block';
-  document.getElementById('chapterKicker').textContent='GLASS HEART · CHAPTER '+String(n).padStart(2,'0');
+  document.getElementById('chapterKicker').textContent='Broken Doll · CHAPTER '+String(n).padStart(2,'0');
   document.getElementById('chapterTitle').textContent=titles[(n-1)%5];
   document.getElementById('progressLabel').textContent='CHAPTER '+n+' OF '+total;
   document.getElementById('prev').style.visibility=n===1?'hidden':'visible';
