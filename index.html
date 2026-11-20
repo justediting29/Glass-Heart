@@ -56,7 +56,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 <aside class="side"><div class="settings"><h3>Reading room</h3><div class="control"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div><div class="control"><label>Page colour</label><input type="color" value="#f5f1e9" id="bg" onchange="setBg(this.value)"></div><div class="control"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div></div></aside></div></section>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
-  <div class="eyebrow">Silakan masuk</div><h2>Login untuk membaca</h2>
+  <div class="eyebrow">Welcome!</div><h2>Reader Area</h2>
   <input id="authName" placeholder="Username">
   <input id="authEmail" type="email" placeholder="Email">
   <input id="authPass" type="password" placeholder="Password (min. 6 characters)">
@@ -145,7 +145,7 @@ async function doAuth(mode){
   var name=document.getElementById('authName').value.trim();
   err.style.color='#a34d40';
   if(!db){err.textContent='Database belum terhubung. Refresh halaman.';return}
-  if(!email||!pass){err.textContent='Isi email dan password dulu.';return}
+  if(!email||!pass){err.textContent='Enter your email & password to Sign Up.';return}
   if(pass.length<6){err.textContent='Password minimal 6 karakter.';return}
   var b1=document.getElementById('btnLogin'),b2=document.getElementById('btnSignup');
   b1.disabled=b2.disabled=true;err.textContent='Memproses...';
@@ -318,7 +318,7 @@ async function renderComments(){
 async function postComment(){
   var text=document.getElementById('commentText').value.trim();if(!text)return;
   var name=readerName();
-  if(!name){showStatus('Silakan login dulu',false);return}
+  if(!name){showStatus('Reader Area',false);return}
   if(await insertComment(text,null,name,null)){
     document.getElementById('commentText').value='';renderComments();
   }
