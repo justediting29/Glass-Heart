@@ -21,15 +21,17 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 .reader-grid{display:grid;grid-template-columns:minmax(0,720px) 230px;gap:65px;justify-content:center}.story{padding-top:54px}.chapter-kicker{text-align:center;color:var(--muted);font-size:10px;letter-spacing:.2em;text-transform:uppercase}.story h1{text-align:center;font:normal 38px Georgia,serif;margin:14px 0 48px}.prose{font:var(--reader-size)/1.95 var(--reader-font);white-space:normal}.prose p{margin:0 0 1.45em}.side{padding-top:68px}.settings{position:sticky;top:20px;border:1px solid var(--line);padding:19px}.settings h3{font:20px Georgia,serif;margin:0 0 18px}.control{margin:15px 0}.control label{display:block;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}.control select,.control input[type=color]{width:100%;border:1px solid var(--line);background:transparent;color:inherit;padding:9px}.size-row{display:flex;gap:8px}.size-row button{flex:1;background:none;border:1px solid var(--line);padding:8px;color:inherit}
 .nav-chapters{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding:24px 0;margin-top:60px}.comments{margin-top:65px;border-top:1px solid var(--line);padding-top:35px}.comments h2{font:28px Georgia,serif}.comment-form textarea,.comment-form input{width:100%;border:1px solid var(--line);background:transparent;padding:12px;color:inherit;margin:7px 0}.comment{padding:17px 0;border-bottom:1px solid var(--line)}.comment strong{font:16px Georgia,serif}.comment small{color:var(--muted);margin-left:10px}.comment p{font:15px/1.7 Georgia,serif}.reply{margin-left:25px;border-left:1px solid var(--line);padding-left:15px}
 .gate{position:fixed;inset:0;background:#24241fe8;display:none;align-items:center;justify-content:center;padding:20px;z-index:10}.gate-card{background:var(--paper);padding:34px;max-width:380px;width:100%;text-align:center}.gate-card h2{font:30px Georgia,serif}.gate-card input{padding:12px;width:100%;border:1px solid var(--line);margin:12px 0}.notice{font-size:11px;line-height:1.6;color:var(--muted);margin-top:24px}
-/* Inline sentence discussions */
-.sentence{display:inline}
-.sentence-comment-btn{display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;min-width:22px;height:22px;margin:0 3px;padding:0 5px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font:11px Arial,sans-serif;cursor:pointer}
-.sentence-comment-btn:hover,.sentence-comment-btn.active{background:var(--accent);color:white}
-.sentence-discussion{display:none;margin:12px 0 25px;padding:17px;border-left:2px solid var(--accent);background:rgba(139,118,100,.07);font-family:Arial,sans-serif}
-.sentence-discussion.open{display:block}.sentence-discussion h4{margin:0 0 12px;font:16px Georgia,serif}
-.sentence-comment{padding:10px 0;border-bottom:1px solid var(--line)}.sentence-comment strong{font:bold 13px Arial,sans-serif}.sentence-comment p{margin:6px 0;font:13px/1.6 Arial,sans-serif}
-.sentence-discussion textarea,.sentence-discussion input{width:100%;margin:6px 0;padding:10px;border:1px solid var(--line);background:transparent;color:inherit}
-.sentence-discussion .primary{padding:10px 15px}
+/* Inline paragraph discussions */
+.para-text{cursor:pointer}
+.para-btn{display:none;align-items:center;justify-content:center;vertical-align:middle;min-width:22px;height:22px;margin:0 3px;padding:0 6px;border:1px solid var(--accent);border-radius:12px;background:transparent;color:var(--accent);font:11px Arial,sans-serif;cursor:pointer}
+.para-btn.has{display:inline-flex}
+.prose p:hover .para-btn.empty,.para-btn.empty.active{display:inline-flex;opacity:.6}
+.para-btn:hover,.para-btn.active{background:var(--accent);color:#fff;opacity:1}
+.para-discussion{display:none;margin:12px 0 25px;padding:17px;border-left:2px solid var(--accent);background:rgba(139,118,100,.07);font-family:Arial,sans-serif}
+.para-discussion.open{display:block}.para-discussion h4{margin:0 0 12px;font:16px Georgia,serif}
+.para-comment{padding:10px 0;border-bottom:1px solid var(--line)}.para-comment strong{font:bold 13px Arial,sans-serif}.para-comment p{margin:6px 0;font:13px/1.6 Arial,sans-serif}
+.para-discussion textarea,.para-discussion input{width:100%;margin:6px 0;padding:10px;border:1px solid var(--line);background:transparent;color:inherit}
+.para-discussion .primary{padding:10px 15px}
 @media(max-width:760px){main{padding-top:35px}.hero{margin:40px auto 60px}.chapter-list{grid-template-columns:1fr}.reader-grid{display:block}.side{padding-top:30px}.settings{position:static}.story{padding-top:38px}.story h1{font-size:32px}.topbar{padding:0 18px}}
 </style>
 </head>
@@ -138,20 +140,24 @@ function renderChapter(n){
   ];
   var prose=document.getElementById('prose');prose.innerHTML='';
   for(var j=0;j<12;j++){
-    var p=document.createElement('p');
-    var paragraphText=paragraphs[(j+n)%paragraphs.length];
-    var sentences=paragraphText.match(/[^.!?]+[.!?]+|[^.!?]+$/g)||[paragraphText];
-    sentences.forEach(function(sentence,k){
-      var key='chapter-'+n+'-p-'+j+'-s-'+k;
-      var span=document.createElement('span');span.className='sentence';span.textContent=sentence+' ';
-      var btn=document.createElement('button');btn.className='sentence-comment-btn';btn.textContent='…';btn.title='Discuss this sentence';
-      var box=document.createElement('div');box.className='sentence-discussion';
-      btn.onclick=function(){toggleSentenceDiscussion(key,box,btn)};
+    (function(j){
+      var p=document.createElement('p');
+      var key='chapter-'+n+'-p-'+j;
+      var span=document.createElement('span');span.className='para-text';
+      span.textContent=paragraphs[(j+n)%paragraphs.length]+' ';
+      var btn=document.createElement('button');btn.className='para-btn empty';btn.textContent='+';
+      btn.title='Discuss this paragraph';btn.dataset.key=key;
+      var box=document.createElement('div');box.className='para-discussion';
+      btn.onclick=function(){toggleParagraphDiscussion(key,box,btn)};
+      span.onclick=function(){
+        if(window.getSelection&&String(window.getSelection()).length)return; /* don't open while selecting text */
+        toggleParagraphDiscussion(key,box,btn);
+      };
       p.appendChild(span);p.appendChild(btn);p.appendChild(box);
-      loadSentenceCount(key,btn);
-    });
-    prose.appendChild(p);
+      prose.appendChild(p);
+    })(j);
   }
+  loadParagraphCounts();
   renderComments();window.scrollTo(0,0);
 }
 
@@ -214,31 +220,45 @@ async function replyTo(parentId){
   if(await insertComment(text,parentId,name,null))renderComments();
 }
 
-/* Sentence-level comments */
-async function loadSentenceCount(key,btn){
-  if(!db)return;
-  var r=await db.from('reader_comments').select('id',{count:'exact',head:true})
-    .eq('chapter',current).eq('passage_key',key);
-  if(!r.error)btn.textContent=String(r.count||0);
+/* Paragraph-level comments */
+function setBadge(btn,count){
+  btn.textContent=count>0?String(count):'+';
+  btn.classList.toggle('has',count>0);
+  btn.classList.toggle('empty',count===0);
 }
-async function toggleSentenceDiscussion(key,box,btn){
+async function loadParagraphCounts(){
+  if(!db)return;
+  var n=current;
+  var r=await db.from('reader_comments').select('passage_key').eq('chapter',n).not('passage_key','is',null);
+  if(r.error||n!==current)return;
+  var counts={};
+  (r.data||[]).forEach(function(row){
+    var m=/^(chapter-\d+-p-\d+)/.exec(row.passage_key||'');
+    if(m)counts[m[1]]=(counts[m[1]]||0)+1;
+  });
+  document.querySelectorAll('.para-btn').forEach(function(b){setBadge(b,counts[b.dataset.key]||0)});
+}
+async function toggleParagraphDiscussion(key,box,btn){
   var isOpen=box.classList.contains('open');
-  document.querySelectorAll('.sentence-discussion.open').forEach(function(el){el.classList.remove('open')});
-  document.querySelectorAll('.sentence-comment-btn.active').forEach(function(el){el.classList.remove('active')});
+  document.querySelectorAll('.para-discussion.open').forEach(function(el){el.classList.remove('open')});
+  document.querySelectorAll('.para-btn.active').forEach(function(el){el.classList.remove('active')});
   if(isOpen)return;
   box.classList.add('open');btn.classList.add('active');
-  box.innerHTML='<h4>Thoughts on this sentence</h4><p>Loading...</p>';
-  await renderSentenceComments(key,box);
+  box.innerHTML='<h4>Thoughts on this paragraph</h4><p>Loading...</p>';
+  await renderParagraphComments(key,box);
 }
-async function renderSentenceComments(key,box){
+async function renderParagraphComments(key,box){
+  if(!db){box.textContent='Database not connected';return}
+  /* also picks up older sentence-level comments (key + "-s-N") so none are lost */
   var r=await db.from('reader_comments').select('*').eq('chapter',current)
-    .eq('passage_key',key).order('created_at',{ascending:true});
+    .or('passage_key.eq.'+key+',passage_key.like.'+key+'-s-*')
+    .order('created_at',{ascending:true});
   if(r.error){box.textContent='Could not load comments: '+r.error.message;return}
-  var comments=r.data||[];box.innerHTML='<h4>Thoughts on this sentence</h4>';
+  var comments=r.data||[];box.innerHTML='<h4>Thoughts on this paragraph</h4>';
   var roots=comments.filter(function(c){return !c.parent_id});
   if(!roots.length){var empty=document.createElement('p');empty.textContent='No thoughts yet. Be the first to comment.';box.appendChild(empty)}
   roots.forEach(function(c){
-    var item=document.createElement('div');item.className='sentence-comment';
+    var item=document.createElement('div');item.className='para-comment';
     var author=document.createElement('strong');author.textContent=c.author_name||'Reader';
     var time=document.createElement('small');time.textContent=' · '+new Date(c.created_at).toLocaleString();
     var body=document.createElement('p');body.textContent=c.body;
@@ -246,7 +266,7 @@ async function renderSentenceComments(key,box){
     reply.onclick=async function(){
       var name=readerName();if(!name)return;
       var text=prompt('Write your reply');if(!text||!text.trim())return;
-      if(await insertComment(text,c.id,name,key)){await renderSentenceComments(key,box);loadSentenceCount(key,box.previousElementSibling)}
+      if(await insertComment(text,c.id,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
     };
     item.appendChild(author);item.appendChild(time);item.appendChild(body);item.appendChild(reply);
     comments.filter(function(x){return x.parent_id===c.id}).forEach(function(rc){
@@ -257,13 +277,13 @@ async function renderSentenceComments(key,box){
     box.appendChild(item);
   });
   var nameInput=document.createElement('input');nameInput.placeholder='Your reader name';nameInput.value=lsGet('gh_name')||'';
-  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this sentence...';
+  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
   var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
   send.onclick=async function(){
     var text=textarea.value.trim(),name=nameInput.value.trim();
     if(!text||!name){alert('Please enter your name and comment.');return}
     send.disabled=true;
-    if(await insertComment(text,null,name,key)){await renderSentenceComments(key,box);loadSentenceCount(key,box.previousElementSibling)}
+    if(await insertComment(text,null,name,key)){await renderParagraphComments(key,box);loadParagraphCounts()}
     send.disabled=false;
   };
   box.appendChild(nameInput);box.appendChild(textarea);box.appendChild(send);
