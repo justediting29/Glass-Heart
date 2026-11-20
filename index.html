@@ -5,6 +5,78 @@
 <meta name="theme-color" content="#f5f1e9">
 <title>Glass Heart</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+.sentence {
+  display: inline;
+}
+
+.sentence-comment-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  min-width: 22px;
+  height: 22px;
+  margin: 0 3px;
+  padding: 0 5px;
+  border: 1px solid var(--accent);
+  border-radius: 12px;
+  background: transparent;
+  color: var(--accent);
+  font: 11px Arial, sans-serif;
+  cursor: pointer;
+}
+
+.sentence-comment-btn:hover,
+.sentence-comment-btn.active {
+  background: var(--accent);
+  color: white;
+}
+
+.sentence-discussion {
+  display: none;
+  margin: 12px 0 25px;
+  padding: 17px;
+  border-left: 2px solid var(--accent);
+  background: rgba(139,118,100,.07);
+  font-family: Arial, sans-serif;
+}
+
+.sentence-discussion.open {
+  display: block;
+}
+
+.sentence-discussion h4 {
+  margin: 0 0 12px;
+  font: 16px Georgia, serif;
+}
+
+.sentence-comment {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.sentence-comment strong {
+  font: bold 13px Arial, sans-serif;
+}
+
+.sentence-comment p {
+  margin: 6px 0;
+  font: 13px/1.6 Arial, sans-serif;
+}
+
+.sentence-discussion textarea,
+.sentence-discussion input {
+  width: 100%;
+  margin: 6px 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+}
+
+.sentence-discussion .primary {
+  padding: 10px 15px;
+}
 <style>
 :root{--paper:#f5f1e9;--ink:#292923;--muted:#858276;--accent:#8b7664;--line:#e4ded2;--reader-size:19px;--reader-font:Georgia,serif}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif;transition:background .2s,color .2s}
@@ -118,12 +190,42 @@ function renderChapter(n){
   document.getElementById('next').style.visibility=n===total?'hidden':'visible';
   lsSet('gh_progress',JSON.stringify({chapter:n,scroll:0}));
   var paragraphs=['The rain had been falling since morning, soft enough to sound like someone turning the pages of a book in the next room. Mara stood by the window and watched the city blur at its edges.','There were things she had promised herself she would never keep. Old receipts. Unsent letters. The little glass bird her mother had left on the mantel, one wing caught forever in the light.','She told herself that memory was a room with a door. She could close it whenever she wished. But some evenings, the handle turned from the other side.','On the table lay an envelope with no return address. Her name was written across it in a hand she had spent years trying to forget.','For a long moment, she did nothing. Then she set down her cup, as carefully as if the smallest sound might change what waited inside.'];
-  var prose=document.getElementById('prose');prose.innerHTML='';
-  for(var j=0;j<12;j++){
-    var p=document.createElement('p');
-    p.textContent=paragraphs[(j+n)%paragraphs.length];
-    prose.appendChild(p);
-  }
+  var prose = document.getElementById('prose');
+prose.innerHTML = '';
+
+for (var j = 0; j < 12; j++) {
+  var p = document.createElement('p');
+  var paragraphText = paragraphs[(j+n)%paragraphs.length];
+
+  var sentences = paragraphText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [paragraphText];
+
+  sentences.forEach(function(sentence, k) {
+    var key = 'chapter-' + n + '-p-' + j + '-s-' + k;
+
+    var span = document.createElement('span');
+    span.className = 'sentence';
+    span.textContent = sentence + ' ';
+
+    var btn = document.createElement('button');
+    btn.className = 'sentence-comment-btn';
+    btn.textContent = '…';
+    btn.title = 'Discuss this sentence';
+    btn.onclick = function() {
+      toggleSentenceDiscussion(key, box, btn);
+    };
+
+    var box = document.createElement('div');
+    box.className = 'sentence-discussion';
+
+    p.appendChild(span);
+    p.appendChild(btn);
+    p.appendChild(box);
+
+    loadSentenceCount(key, btn);
+  });
+
+  prose.appendChild(p);
+}
   renderComments();
   window.scrollTo(0,0);
 }
@@ -144,14 +246,28 @@ function readerName(){
   }
   return name;
 }
-async function insertComment(text,parentId,name){
-  if(!db){showStatus('Database not connected',false);return false}
-  var r=await db.from('reader_comments').insert({
-    chapter:current,passage_id:null,parent_id:parentId,author_name:name,body:text.trim()
+async function insertComment(text, parentId, name, passageKey) {
+  if (!db) {
+    showStatus('Database not connected', false);
+    return false;
+  }
+
+  var r = await db.from('reader_comments').insert({
+    chapter: current,
+    passage_id: null,
+    passage_key: passageKey || null,
+    parent_id: parentId,
+    author_name: name,
+    body: text.trim()
   });
-  if(r.error){showStatus('Could not save comment: '+r.error.message,false);return false}
-  lsSet('gh_name',name);
-  showStatus('Comment saved ✓',true);
+
+  if (r.error) {
+    showStatus('Could not save comment: ' + r.error.message, false);
+    return false;
+  }
+
+  lsSet('gh_name', name);
+  showStatus('Comment saved ✓', true);
   return true;
 }
 async function renderComments(){
@@ -187,6 +303,161 @@ async function replyTo(parentId){
   var text=prompt('Write your reply');
   if(!text||!text.trim())return;
   if(await insertComment(text,parentId,name))renderComments();
+}
+async function loadSentenceCount(key, btn) {
+  if (!db) return;
+
+  var r = await db
+    .from('reader_comments')
+    .select('id', { count: 'exact', head: true })
+    .eq('chapter', current)
+    .eq('passage_key', key);
+
+  if (!r.error) {
+    btn.textContent = r.count || '…';
+    btn.title = (r.count || 0) + ' comments';
+  }
+}
+
+async function toggleSentenceDiscussion(key, box, btn) {
+  var isOpen = box.classList.contains('open');
+
+  document.querySelectorAll('.sentence-discussion.open')
+    .forEach(function(el) {
+      el.classList.remove('open');
+    });
+
+  document.querySelectorAll('.sentence-comment-btn.active')
+    .forEach(function(el) {
+      el.classList.remove('active');
+    });
+
+  if (isOpen) return;
+
+  box.classList.add('open');
+  btn.classList.add('active');
+  box.innerHTML = '<h4>Thoughts on this sentence</h4><p>Loading...</p>';
+
+  await renderSentenceComments(key, box);
+}
+
+async function renderSentenceComments(key, box) {
+  var r = await db
+    .from('reader_comments')
+    .select('*')
+    .eq('chapter', current)
+    .eq('passage_key', key)
+    .order('created_at', { ascending: true });
+
+  if (r.error) {
+    box.textContent = 'Could not load comments: ' + r.error.message;
+    return;
+  }
+
+  var comments = r.data || [];
+  box.innerHTML = '<h4>Thoughts on this sentence</h4>';
+
+  var roots = comments.filter(function(c) {
+    return !c.parent_id;
+  });
+
+  if (!roots.length) {
+    var empty = document.createElement('p');
+    empty.textContent = 'No thoughts yet. Be the first to comment.';
+    box.appendChild(empty);
+  }
+
+  roots.forEach(function(c) {
+    var item = document.createElement('div');
+    item.className = 'sentence-comment';
+
+    var author = document.createElement('strong');
+    author.textContent = c.author_name || 'Reader';
+
+    var body = document.createElement('p');
+    body.textContent = c.body;
+
+    var time = document.createElement('small');
+    time.textContent = new Date(c.created_at).toLocaleString();
+
+    var reply = document.createElement('button');
+    reply.className = 'text-btn';
+    reply.textContent = 'Reply';
+
+    reply.onclick = async function() {
+      var name = readerName();
+      if (!name) return;
+
+      var text = prompt('Write your reply');
+      if (!text || !text.trim()) return;
+
+      if (await insertComment(text, c.id, name, key)) {
+        await renderSentenceComments(key, box);
+        var countBtn = box.previousElementSibling;
+        if (countBtn) loadSentenceCount(key, countBtn);
+      }
+    };
+
+    item.appendChild(author);
+    item.appendChild(time);
+    item.appendChild(body);
+    item.appendChild(reply);
+
+    comments.filter(function(x) {
+      return x.parent_id === c.id;
+    }).forEach(function(replyComment) {
+      var replyBox = document.createElement('div');
+      replyBox.className = 'reply';
+
+      var replyAuthor = document.createElement('strong');
+      replyAuthor.textContent = replyComment.author_name || 'Reader';
+
+      var replyBody = document.createElement('p');
+      replyBody.textContent = replyComment.body;
+
+      replyBox.appendChild(replyAuthor);
+      replyBox.appendChild(replyBody);
+      item.appendChild(replyBox);
+    });
+
+    box.appendChild(item);
+  });
+
+  var nameInput = document.createElement('input');
+  nameInput.placeholder = 'Your reader name';
+  nameInput.value = lsGet('gh_name') || '';
+
+  var textarea = document.createElement('textarea');
+  textarea.rows = 2;
+  textarea.placeholder = 'Leave a thought about this sentence...';
+
+  var send = document.createElement('button');
+  send.className = 'primary';
+  send.textContent = 'Post comment';
+
+  send.onclick = async function() {
+    var text = textarea.value.trim();
+    var name = nameInput.value.trim();
+
+    if (!text || !name) {
+      alert('Please enter your name and comment.');
+      return;
+    }
+
+    send.disabled = true;
+
+    if (await insertComment(text, null, name, key)) {
+      await renderSentenceComments(key, box);
+      var countBtn = box.previousElementSibling;
+      if (countBtn) loadSentenceCount(key, countBtn);
+    }
+
+    send.disabled = false;
+  };
+
+  box.appendChild(nameInput);
+  box.appendChild(textarea);
+  box.appendChild(send);
 }
 /* ---------- Settings ---------- */
 function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
