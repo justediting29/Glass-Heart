@@ -1,460 +1,558 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#f5f1e9">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Glass Heart</title>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+
 <style>
-.sentence {
-  display: inline;
+* {
+  box-sizing: border-box;
 }
-.sentence-comment-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-  min-width: 22px;
-  height: 22px;
-  margin: 0 3px;
-  padding: 0 5px;
-  border: 1px solid var(--accent);
-  border-radius: 12px;
-  background: transparent;
-  color: var(--accent);
-  font: 11px Arial, sans-serif;
+
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: #f7f3f1;
+  color: #403638;
+}
+
+button, input, textarea {
+  font: inherit;
+}
+
+button {
   cursor: pointer;
 }
 
-.sentence-comment-btn:hover,
-.sentence-comment-btn.active {
-  background: var(--accent);
+header {
+  padding: 24px;
+  text-align: center;
+  background: #eadcda;
+}
+
+header h1 {
+  margin: 0;
+  letter-spacing: 5px;
+  font-size: 30px;
+}
+
+header p {
+  margin-bottom: 0;
+  font-style: italic;
+}
+
+main {
+  max-width: 850px;
+  margin: 35px auto;
+  padding: 20px;
+}
+
+.panel {
+  background: #fffdfc;
+  border: 1px solid #eadfdd;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 22px;
+  box-shadow: 0 4px 18px #00000008;
+}
+
+input, textarea {
+  width: 100%;
+  padding: 12px;
+  margin: 7px 0;
+  border: 1px solid #d9c9c6;
+  border-radius: 7px;
+  background: white;
+}
+
+textarea {
+  min-height: 90px;
+  resize: vertical;
+}
+
+button.primary {
+  border: 0;
+  background: #9d777b;
   color: white;
+  padding: 10px 18px;
+  border-radius: 7px;
+}
+
+button.primary:hover {
+  background: #805e62;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.chapter-list {
+  display: grid;
+  gap: 10px;
+}
+
+.chapter-item {
+  padding: 13px;
+  border: 1px solid #e8d9d7;
+  border-radius: 7px;
+  background: #fff;
+  text-align: left;
+}
+
+.chapter-item:hover {
+  background: #f5eae8;
+}
+
+#story {
+  line-height: 1.9;
+  font-size: 17px;
+}
+
+.story-paragraph {
+  margin: 20px 0;
+}
+
+.sentence {
+  display: inline;
+}
+
+.sentence-comment-btn {
+  display: inline-block;
+  vertical-align: super;
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  line-height: 1;
+  margin: 0 3px;
+  padding: 3px 5px;
+  border: 0;
+  border-radius: 10px;
+  background: #eadcda;
+  color: #76575b;
+  cursor: pointer;
+}
+
+.sentence-comment-btn:hover {
+  background: #d9bfc0;
 }
 
 .sentence-discussion {
   display: none;
-  margin: 12px 0 25px;
-  padding: 17px;
-  border-left: 2px solid var(--accent);
-  background: rgba(139,118,100,.07);
+  margin: 10px 0 20px;
+  padding: 15px;
+  background: #faf2f1;
+  border-left: 3px solid #b68e91;
+  border-radius: 6px;
   font-family: Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
 }
 
 .sentence-discussion.open {
   display: block;
 }
 
-.sentence-discussion h4 {
-  margin: 0 0 12px;
-  font: 16px Georgia, serif;
-}
-
 .sentence-comment {
   padding: 10px 0;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid #eadcda;
 }
 
 .sentence-comment strong {
-  font: bold 13px Arial, sans-serif;
+  color: #805e62;
 }
 
-.sentence-comment p {
-  margin: 6px 0;
-  font: 13px/1.6 Arial, sans-serif;
+.sentence-comment small {
+  color: #99888a;
 }
 
-.sentence-discussion textarea,
-.sentence-discussion input {
-  width: 100%;
-  margin: 6px 0;
-  padding: 10px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: inherit;
+.reply {
+  margin-left: 18px;
+  padding-left: 10px;
+  border-left: 2px solid #dfc9c8;
 }
 
-.sentence-discussion .primary {
-  padding: 10px 15px;
+.comment-form {
+  margin-top: 12px;
 }
-</style></head>
+
+#comments {
+  margin-top: 15px;
+}
+
+.comment {
+  border-bottom: 1px solid #eadcda;
+  padding: 12px 0;
+}
+
+.comment strong {
+  color: #805e62;
+}
+
+footer {
+  text-align: center;
+  padding: 25px;
+  color: #99888a;
+  font-size: 13px;
+}
+</style>
+</head>
+
 <body>
-<div id="statusBar"></div>
-<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><a href="#chapters" onclick="home()">Chapters</a></header>
-<main id="home">
-<section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
-<p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
-<p class="warnings">CONTENT NOTES · GRIEF · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
-<button class="primary" onclick="openChapter(1)">Begin reading&nbsp; →</button>
-<div class="notice">Your reading progress is saved on this device.</div></section>
-<div class="rule"></div><section id="chapters"><div class="section-head"><div><div class="eyebrow">The story</div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
+
+<header>
+  <h1>GLASS HEART</h1>
+  <p>Some stories are written in silence.</p>
+</header>
+
+<main>
+  <section id="home" class="panel">
+    <h2>Welcome to Glass Heart</h2>
+    <p>A little place for stories, thoughts, and words.</p>
+    <button class="primary" onclick="showChapters()">Read the story</button>
+  </section>
+
+  <section id="chapterMenu" class="panel hidden">
+    <h2>Chapters</h2>
+    <div id="chapterList" class="chapter-list"></div>
+    <button class="primary" onclick="goHome()">Back</button>
+  </section>
+
+  <section id="reader" class="panel hidden">
+    <button onclick="showChapters()">← Chapters</button>
+    <h2 id="chapterTitle"></h2>
+    <div id="story"></div>
+
+    <hr>
+
+    <h3>Chapter Discussion</h3>
+    <div id="comments"></div>
+
+    <div class="comment-form">
+      <input id="chapterName" placeholder="Your name">
+      <textarea id="chapterComment" placeholder="Write a comment..."></textarea>
+      <button class="primary" onclick="postChapterComment()">Post comment</button>
+    </div>
+  </section>
 </main>
-<section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="document.querySelector('.settings').scrollIntoView({behavior:'smooth'})">Aa&nbsp; Settings</button></div>
-<div class="reader-grid"><article class="story"><div class="chapter-kicker" id="chapterKicker"></div><h1 id="chapterTitle"></h1><div class="prose" id="prose"></div>
-<div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
-<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><input id="commentName" placeholder="Your reader name"><textarea id="commentText" rows="3" placeholder="Leave a thought…"></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
-<aside class="side"><div class="settings"><h3>Reading room</h3><div class="control"><label>Typeface</label><select id="font" onchange="setFont(this.value)"><option value="Georgia,serif">Literary serif</option><option value="Arial,sans-serif">Modern sans</option><option value="'Palatino Linotype',serif">Palatino</option><option value="'Courier New',monospace">Typewriter</option></select></div><div class="control"><label>Page colour</label><input type="color" value="#f5f1e9" id="bg" onchange="setBg(this.value)"></div><div class="control"><label>Text size</label><div class="size-row"><button onclick="changeSize(-1)">A−</button><button onclick="changeSize(1)">A+</button></div></div></div></aside></div></section>
-<div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
+
+<footer>GLASS HEART · A STORY SHARED</footer>
 <script>
-var SUPABASE_URL = 'https://qswgpgjokzixzofylikr.supabase.co';   // Project URL, without /rest/v1
-var SUPABASE_KEY = 'sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk'; // anon / publishable key
-function showStatus(msg, ok){
-  var b=document.getElementById('statusBar');
-  b.style.display='block';
-  b.style.background= ok ? '#3d6b4a' : '#a34d40';
-  b.textContent=msg;
-  if(ok) setTimeout(function(){b.style.display='none'},3000);
-}
-window.onerror=function(m,s,l){showStatus('JS error: '+m+' (line '+l+')',false)};
-window.addEventListener('unhandledrejection',function(e){showStatus('Promise error: '+(e.reason&&e.reason.message||e.reason),false)});
-var db=null;
-try{
-  if(!window.supabase) throw new Error('The Supabase library failed to load (check your connection)');
-  if(SUPABASE_URL.indexOf('XXXX')>-1||SUPABASE_KEY.indexOf('ISI_')>-1) throw new Error('Supabase URL / key have not been filled in');
-  db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-  db.from('reader_comments').select('id').limit(1).then(function(r){
-    if(r.error) showStatus('Database test failed: '+r.error.message,false);
-    else showStatus('Database connected ✓',true);
-  });
-}catch(e){showStatus(e.message,false)}
-const total=50;let current=1,pending=1,fontSize=19;
-const titles=['The things we keep','A familiar silence','Paper moons','The shape of leaving','An unfinished letter'];
-const group=n=>Math.floor((n-1)/10)+1;
-function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function lsGet(k){try{return localStorage.getItem(k)}catch(e){return null}}
-function lsSet(k,v){try{localStorage.setItem(k,v)}catch(e){}}
-function makeChapters(){
-  var el=document.getElementById('chapterList');
-  for(var i=1;i<=total;i++){
-    (function(i){
-      var a=document.createElement('a');a.className='chapter-link';a.href='#chapter-'+i;
-      a.innerHTML='<span>'+String(i).padStart(2,'0')+' &nbsp; '+titles[(i-1)%5]+'</span><small>CHAPTER '+String(i).padStart(2,'0')+'</small>';
-      a.onclick=function(e){e.preventDefault();openChapter(i)};
-      el.appendChild(a);
-    })(i);
+// SUPABASE CONFIGURATION
+const SUPABASE_URL = "https://qswgpgjokzixzofylikr.supabase.co";
+const SUPABASE_KEY = "sb_publishable_rdU79hSv-rt1TtN5DnFvFQ_tk5QHWsk";
+
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let currentChapter = 1;
+
+// CONTOH ISI CERITA
+// Ganti bagian ini dengan isi cerita asli kamu.
+const paragraphs = [
+  "The sky was quiet that evening. I watched the rain fall against the window, wondering if some things were meant to be forgotten.",
+  "There was something strange about silence. Sometimes it said more than words ever could.",
+  "I remembered the way you smiled, and how foolishly I believed that it would last forever."
+];
+
+function showChapters() {
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("reader").classList.add("hidden");
+  document.getElementById("chapterMenu").classList.remove("hidden");
+
+  const list = document.getElementById("chapterList");
+  list.innerHTML = "";
+
+  for (let i = 1; i <= 50; i++) {
+    const button = document.createElement("button");
+    button.className = "chapter-item";
+    button.textContent = "Chapter " + i;
+    button.onclick = () => openChapter(i);
+    list.appendChild(button);
   }
 }
-function home(){
-  document.getElementById('home').style.display='block';
-  document.getElementById('reader').style.display='none';
-  document.getElementById('gate').style.display='none';
-  window.scrollTo(0,0);
+
+function goHome() {
+  document.getElementById("home").classList.remove("hidden");
+  document.getElementById("chapterMenu").classList.add("hidden");
+  document.getElementById("reader").classList.add("hidden");
 }
-function openChapter(n){
-  if(n<1||n>total)return;
-  pending=n;var g=group(n);
-  var unlocked=JSON.parse(lsGet('gh_unlocked')||'[]');
-  if(unlocked.indexOf(g)<0){
-    document.getElementById('gateText').textContent='Chapters '+((g-1)*10+1)+'–'+(g*10)+' are password protected.';
-    document.getElementById('password').value='';
-    document.getElementById('gateError').textContent='';
-    document.getElementById('gate').style.display='flex';
+
+function openChapter(n) {
+  currentChapter = n;
+
+  document.getElementById("home").classList.add("hidden");
+  document.getElementById("chapterMenu").classList.add("hidden");
+  document.getElementById("reader").classList.remove("hidden");
+
+  document.getElementById("chapterTitle").textContent = "Chapter " + n;
+
+  renderChapter(n);
+  loadChapterComments();
+}
+
+function esc(value) {
+  return String(value).replace(/[&<>"']/g, c => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[c]);
+}
+
+// RENDER CERITA DAN TOMBOL KOMENTAR PER KALIMAT
+function renderChapter(n) {
+  const story = document.getElementById("story");
+  story.innerHTML = "";
+
+  paragraphs.forEach((paragraph, pIndex) => {
+    const p = document.createElement("p");
+    p.className = "story-paragraph";
+
+    const sentences = paragraph.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [paragraph];
+
+    sentences.forEach((sentence, sIndex) => {
+      const key = `chapter-${n}-p-${pIndex}-s-${sIndex}`;
+
+      const span = document.createElement("span");
+      span.className = "sentence";
+      span.textContent = sentence + " ";
+
+      const button = document.createElement("button");
+      button.className = "sentence-comment-btn";
+      button.textContent = "...";
+      button.title = "Open sentence comments";
+      button.onclick = () => toggleSentenceDiscussion(key, box, button);
+
+      const box = document.createElement("div");
+      box.className = "sentence-discussion";
+      box.id = "discussion-" + key;
+
+      p.appendChild(span);
+      p.appendChild(button);
+      p.appendChild(box);
+
+      loadSentenceCount(key, button);
+    });
+
+    story.appendChild(p);
+  });
+}
+
+// LOAD JUMLAH KOMENTAR
+async function loadSentenceCount(key, button) {
+  const { count, error } = await db
+    .from("reader_comments")
+    .select("*", { count: "exact", head: true })
+    .eq("passage_key", key);
+
+  if (error) {
+    button.textContent = "!";
+    console.error(error);
     return;
   }
-  renderChapter(n);
-}
-function unlock(){
-  var g=group(pending);
-  if(document.getElementById('password').value!=='password'+g){
-    document.getElementById('gateError').textContent='That password does not match.';return;
-  }
-  var u=JSON.parse(lsGet('gh_unlocked')||'[]');
-  if(u.indexOf(g)<0)u.push(g);
-  lsSet('gh_unlocked',JSON.stringify(u));
-  document.getElementById('gate').style.display='none';
-  renderChapter(pending);
-}
-function renderChapter(n){
-  current=n;
-  document.getElementById('home').style.display='none';
-  document.getElementById('reader').style.display='block';
-  document.getElementById('chapterKicker').textContent='GLASS HEART · CHAPTER '+String(n).padStart(2,'0');
-  document.getElementById('chapterTitle').textContent=titles[(n-1)%5];
-  document.getElementById('progressLabel').textContent='CHAPTER '+n+' OF '+total;
-  document.getElementById('prev').style.visibility=n===1?'hidden':'visible';
-  document.getElementById('next').style.visibility=n===total?'hidden':'visible';
-  lsSet('gh_progress',JSON.stringify({chapter:n,scroll:0}));
-  var paragraphs=['The rain had been falling since morning, soft enough to sound like someone turning the pages of a book in the next room. Mara stood by the window and watched the city blur at its edges.','There were things she had promised herself she would never keep. Old receipts. Unsent letters. The little glass bird her mother had left on the mantel, one wing caught forever in the light.','She told herself that memory was a room with a door. She could close it whenever she wished. But some evenings, the handle turned from the other side.','On the table lay an envelope with no return address. Her name was written across it in a hand she had spent years trying to forget.','For a long moment, she did nothing. Then she set down her cup, as carefully as if the smallest sound might change what waited inside.'];
-  var prose = document.getElementById('prose');
-prose.innerHTML = '';
 
-for (var j = 0; j < 12; j++) {
-  var p = document.createElement('p');
-  var paragraphText = paragraphs[(j+n)%paragraphs.length];
-
-  var sentences = paragraphText.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [paragraphText];
-
-  sentences.forEach(function(sentence, k) {
-    var key = 'chapter-' + n + '-p-' + j + '-s-' + k;
-
-    var span = document.createElement('span');
-    span.className = 'sentence';
-    span.textContent = sentence + ' ';
-
-    var btn = document.createElement('button');
-    btn.className = 'sentence-comment-btn';
-    btn.textContent = '…';
-    btn.title = 'Discuss this sentence';
-    btn.onclick = function() {
-      toggleSentenceDiscussion(key, box, btn);
-    };
-
-    var box = document.createElement('div');
-    box.className = 'sentence-discussion';
-
-    p.appendChild(span);
-    p.appendChild(btn);
-    p.appendChild(box);
-
-    loadSentenceCount(key, btn);
-  });
-
-  prose.appendChild(p);
-}
-  renderComments();
-  window.scrollTo(0,0);
+  button.textContent = String(count || 0);
 }
 
-/* ---------- Supabase comments (chapter-level only) ---------- */
-async function getChapterComments(){
-  if(!db) throw new Error('Database not connected');
-  var r=await db.from('reader_comments').select('*').eq('chapter',current).is('passage_id',null).order('created_at',{ascending:true});
-  if(r.error) throw r.error;
-  return r.data||[];
-}
-function readerName(){
-  var name=lsGet('gh_name');
-  if(!name){
-    name=prompt('Choose your reader name');
-    if(!name||!name.trim())return null;
-    lsSet('gh_name',name.trim());
-  }
-  return name;
-}
-async function insertComment(text, parentId, name, passageKey) {
-  if (!db) {
-    showStatus('Database not connected', false);
-    return false;
-  }
+// BUKA / TUTUP DISKUSI KALIMAT
+async function toggleSentenceDiscussion(key, box, button) {
+  box.classList.toggle("open");
 
-  var r = await db.from('reader_comments').insert({
-    chapter: current,
-    passage_id: null,
-    passage_key: passageKey || null,
-    parent_id: parentId,
-    author_name: name,
-    body: text.trim()
-  });
-
-  if (r.error) {
-    showStatus('Could not save comment: ' + r.error.message, false);
-    return false;
-  }
-
-  lsSet('gh_name', name);
-  showStatus('Comment saved ✓', true);
-  return true;
-}
-async function renderComments(){
-  var list=document.getElementById('commentList');
-  list.textContent='Loading comments...';
-  try{
-    var comments=await getChapterComments();
-    var roots=comments.filter(function(c){return !c.parent_id});
-    list.innerHTML='';
-    roots.forEach(function(c){
-      var replies=comments.filter(function(r){return r.parent_id===c.id});
-      var d=document.createElement('div');d.className='comment';
-      d.innerHTML='<strong>'+esc(c.author_name||'Reader')+'</strong><small>'+new Date(c.created_at).toLocaleString()+'</small><p>'+esc(c.body)+'</p><button class="text-btn" onclick="replyTo(\''+esc(c.id)+'\')">Reply</button><div>'+replies.map(function(r){return '<div class="reply"><strong>'+esc(r.author_name||'Reader')+'</strong><small>'+new Date(r.created_at).toLocaleString()+'</small><p>'+esc(r.body)+'</p></div>'}).join('')+'</div>';
-      list.appendChild(d);
-    });
-    if(!roots.length)list.textContent='No comments yet. Be the first to leave a thought.';
-  }catch(e){list.textContent='Could not load comments: '+e.message}
-}
-async function postComment(){
-  var text=document.getElementById('commentText').value.trim();
-  if(!text)return;
-  var name=document.getElementById('commentName').value.trim()||readerName();
-  if(!name){showStatus('Please enter your reader name first',false);return}
-  if(await insertComment(text,null,name)){
-    document.getElementById('commentName').value=name;
-    document.getElementById('commentText').value='';
-    renderComments();
-  }
-}
-async function replyTo(parentId){
-  var name=readerName();
-  if(!name)return;
-  var text=prompt('Write your reply');
-  if(!text||!text.trim())return;
-  if(await insertComment(text,parentId,name))renderComments();
-}
-async function loadSentenceCount(key, btn) {
-  if (!db) return;
-
-  var r = await db
-    .from('reader_comments')
-    .select('id', { count: 'exact', head: true })
-    .eq('chapter', current)
-    .eq('passage_key', key);
-
-  if (!r.error) {
-    btn.textContent = r.count || '…';
-    btn.title = (r.count || 0) + ' comments';
-  }
-}
-
-async function toggleSentenceDiscussion(key, box, btn) {
-  var isOpen = box.classList.contains('open');
-
-  document.querySelectorAll('.sentence-discussion.open')
-    .forEach(function(el) {
-      el.classList.remove('open');
-    });
-
-  document.querySelectorAll('.sentence-comment-btn.active')
-    .forEach(function(el) {
-      el.classList.remove('active');
-    });
-
-  if (isOpen) return;
-
-  box.classList.add('open');
-  btn.classList.add('active');
-  box.innerHTML = '<h4>Thoughts on this sentence</h4><p>Loading...</p>';
+  if (!box.classList.contains("open")) return;
 
   await renderSentenceComments(key, box);
 }
 
+// TAMPILKAN KOMENTAR DAN BALASAN
 async function renderSentenceComments(key, box) {
-  var r = await db
-    .from('reader_comments')
-    .select('*')
-    .eq('chapter', current)
-    .eq('passage_key', key)
-    .order('created_at', { ascending: true });
+  box.innerHTML = "<p>Loading comments...</p>";
 
-  if (r.error) {
-    box.textContent = 'Could not load comments: ' + r.error.message;
+  const { data, error } = await db
+    .from("reader_comments")
+    .select("*")
+    .eq("passage_key", key)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    box.innerHTML = "<p>Could not load comments.</p>";
+    console.error(error);
     return;
   }
 
-  var comments = r.data || [];
-  box.innerHTML = '<h4>Thoughts on this sentence</h4>';
+  const roots = data.filter(c => !c.parent_id);
 
-  var roots = comments.filter(function(c) {
-    return !c.parent_id;
-  });
+  let html = "";
 
-  if (!roots.length) {
-    var empty = document.createElement('p');
-    empty.textContent = 'No thoughts yet. Be the first to comment.';
-    box.appendChild(empty);
-  }
+  roots.forEach(comment => {
+    html += `
+      <div class="sentence-comment">
+        <strong>${esc(comment.author_name)}</strong>
+        <p>${esc(comment.body)}</p>
+        <button onclick="replyToSentence('${esc(comment.id)}','${esc(key)}')">
+          Reply
+        </button>
+    `;
 
-  roots.forEach(function(c) {
-    var item = document.createElement('div');
-    item.className = 'sentence-comment';
+    const replies = data.filter(c => c.parent_id === comment.id);
 
-    var author = document.createElement('strong');
-    author.textContent = c.author_name || 'Reader';
-
-    var body = document.createElement('p');
-    body.textContent = c.body;
-
-    var time = document.createElement('small');
-    time.textContent = new Date(c.created_at).toLocaleString();
-
-    var reply = document.createElement('button');
-    reply.className = 'text-btn';
-    reply.textContent = 'Reply';
-
-    reply.onclick = async function() {
-      var name = readerName();
-      if (!name) return;
-
-      var text = prompt('Write your reply');
-      if (!text || !text.trim()) return;
-
-      if (await insertComment(text, c.id, name, key)) {
-        await renderSentenceComments(key, box);
-        var countBtn = box.previousElementSibling;
-        if (countBtn) loadSentenceCount(key, countBtn);
-      }
-    };
-
-    item.appendChild(author);
-    item.appendChild(time);
-    item.appendChild(body);
-    item.appendChild(reply);
-
-    comments.filter(function(x) {
-      return x.parent_id === c.id;
-    }).forEach(function(replyComment) {
-      var replyBox = document.createElement('div');
-      replyBox.className = 'reply';
-
-      var replyAuthor = document.createElement('strong');
-      replyAuthor.textContent = replyComment.author_name || 'Reader';
-
-      var replyBody = document.createElement('p');
-      replyBody.textContent = replyComment.body;
-
-      replyBox.appendChild(replyAuthor);
-      replyBox.appendChild(replyBody);
-      item.appendChild(replyBox);
+    replies.forEach(reply => {
+      html += `
+        <div class="reply">
+          <strong>${esc(reply.author_name)}</strong>
+          <p>${esc(reply.body)}</p>
+        </div>
+      `;
     });
 
-    box.appendChild(item);
+    html += "</div>";
   });
 
-  var nameInput = document.createElement('input');
-  nameInput.placeholder = 'Your reader name';
-  nameInput.value = lsGet('gh_name') || '';
+  box.innerHTML = html || "<p>No comments yet.</p>";
 
-  var textarea = document.createElement('textarea');
-  textarea.rows = 2;
-  textarea.placeholder = 'Leave a thought about this sentence...';
-
-  var send = document.createElement('button');
-  send.className = 'primary';
-  send.textContent = 'Post comment';
-
-  send.onclick = async function() {
-    var text = textarea.value.trim();
-    var name = nameInput.value.trim();
-
-    if (!text || !name) {
-      alert('Please enter your name and comment.');
-      return;
-    }
-
-    send.disabled = true;
-
-    if (await insertComment(text, null, name, key)) {
-      await renderSentenceComments(key, box);
-      var countBtn = box.previousElementSibling;
-      if (countBtn) loadSentenceCount(key, countBtn);
-    }
-
-    send.disabled = false;
-  };
-
-  box.appendChild(nameInput);
-  box.appendChild(textarea);
-  box.appendChild(send);
+  box.innerHTML += `
+    <div class="comment-form">
+      <input id="name-${key}" placeholder="Your name">
+      <textarea id="body-${key}" placeholder="Write your thoughts..."></textarea>
+      <button class="primary" onclick="postSentenceComment('${key}', null)">
+        Post comment
+      </button>
+    </div>
+  `;
 }
-/* ---------- Settings ---------- */
-function setFont(v){document.documentElement.style.setProperty('--reader-font',v);lsSet('gh_font',v)}
-function setBg(v){document.documentElement.style.setProperty('--paper',v);lsSet('gh_bg',v)}
-function changeSize(d){fontSize=Math.max(14,Math.min(30,fontSize+d));document.documentElement.style.setProperty('--reader-size',fontSize+'px');lsSet('gh_size',fontSize)}
-function restore(){
-  var f=lsGet('gh_font');if(f){setFont(f);document.getElementById('font').value=f}
-  var b=lsGet('gh_bg');if(b){setBg(b);document.getElementById('bg').value=b}
-  var s=parseInt(lsGet('gh_size'));if(s){fontSize=s;document.documentElement.style.setProperty('--reader-size',s+'px')}
+
+// KIRIM KOMENTAR KALIMAT
+async function postSentenceComment(key, parentId) {
+  const nameInput = document.getElementById("name-" + key);
+  const bodyInput = document.getElementById("body-" + key);
+
+  const name = nameInput.value.trim();
+  const body = bodyInput.value.trim();
+
+  if (!name || !body) {
+    alert("Please enter your name and comment.");
+    return;
+  }
+
+  const { error } = await db.from("reader_comments").insert({
+    chapter: currentChapter,
+    passage_id: null,
+    passage_key: key,
+    parent_id: parentId,
+    author_name: name,
+    body: body
+  });
+
+  if (error) {
+    alert("Could not post comment: " + error.message);
+    return;
+  }
+
+  const box = document.getElementById("discussion-" + key);
+  await renderSentenceComments(key, box);
+
+  const button = box.previousElementSibling;
+  await loadSentenceCount(key, button);
 }
-makeChapters();
-restore();
+
+// BALAS KOMENTAR KALIMAT
+async function replyToSentence(parentId, key) {
+  const name = prompt("Your name:");
+  if (!name) return;
+
+  const body = prompt("Write your reply:");
+  if (!body) return;
+
+  const { error } = await db.from("reader_comments").insert({
+    chapter: currentChapter,
+    passage_id: null,
+    passage_key: key,
+    parent_id: parentId,
+    author_name: name.trim(),
+    body: body.trim()
+  });
+
+  if (error) {
+    alert("Could not post reply: " + error.message);
+    return;
+  }
+
+  const box = document.getElementById("discussion-" + key);
+  await renderSentenceComments(key, box);
+}
+
+// KOMENTAR CHAPTER BIASA
+async function loadChapterComments() {
+  const container = document.getElementById("comments");
+  container.innerHTML = "<p>Loading...</p>";
+
+  const { data, error } = await db
+    .from("reader_comments")
+    .select("*")
+    .eq("chapter", currentChapter)
+    .is("passage_id", null)
+    .is("passage_key", null)
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    container.innerHTML = "<p>Could not load comments.</p>";
+    console.error(error);
+    return;
+  }
+
+  container.innerHTML = "";
+
+  data.forEach(comment => {
+    const div = document.createElement("div");
+    div.className = "comment";
+    div.innerHTML = `
+      <strong>${esc(comment.author_name)}</strong>
+      <p>${esc(comment.body)}</p>
+    `;
+    container.appendChild(div);
+  });
+
+  if (data.length === 0) {
+    container.innerHTML = "<p>No comments yet.</p>";
+  }
+}
+
+// KIRIM KOMENTAR CHAPTER
+async function postChapterComment() {
+  const name = document.getElementById("chapterName").value.trim();
+  const body = document.getElementById("chapterComment").value.trim();
+
+  if (!name || !body) {
+    alert("Please enter your name and comment.");
+    return;
+  }
+
+  const { error } = await db.from("reader_comments").insert({
+    chapter: currentChapter,
+    passage_id: null,
+    passage_key: null,
+    parent_id: null,
+    author_name: name,
+    body: body
+  });
+
+  if (error) {
+    alert("Could not post comment: " + error.message);
+    return;
+  }
+
+  document.getElementById("chapterComment").value = "";
+  await loadChapterComments();
+}
+
+// TAMPILKAN HALAMAN AWAL
+goHome();
 </script>
+
 </body>
 </html>
+
+
+
+  
