@@ -10,6 +10,7 @@
 <style>
 .avatar{width:28px;height:28px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-right:8px;background:var(--line)}
 .avatar.big{width:96px;height:96px;display:block;margin:14px auto}
+.nav-avatar{width:26px;height:26px;border-radius:50%;object-fit:cover;vertical-align:middle;margin-left:8px;background:var(--line);display:none}
 :root{--paper:#f5f1e9;--ink:#292923;--muted:#858276;--accent:#8b7664;--line:#e4ded2;--reader-size:19px;--reader-font:Georgia,serif}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Arial,sans-serif;transition:background .2s,color .2s}
 button,input,textarea,select{font:inherit}button{cursor:pointer}
@@ -40,7 +41,7 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 </head>
 <body>
 <div id="statusBar"></div>
-<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false">Login</a></span></header>
+<header class="topbar"><a class="brand" href="#" onclick="home();return false">the quiet shelf</a><span>an ongoing story</span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
 <main id="home">
 <section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
@@ -121,8 +122,14 @@ async function loadProfile(){
   myProfile=r.data||{display_name:me.email.split('@')[0],avatar_url:null};
 }
 function updateAuthUI(){
-  var b=document.getElementById('authBtn');
-  b.textContent=me?(myProfile&&myProfile.display_name||'Profil'):'Login';
+  var n=document.getElementById('navName'),a=document.getElementById('navAvatar');
+  n.textContent=me?(myProfile&&myProfile.display_name||'Profile'):'Login';
+  if(me){
+    a.src=(myProfile&&myProfile.avatar_url)||FALLBACK_AVATAR;
+    a.style.display='inline-block';
+  }else{
+    a.style.display='none';
+  }
 }
 function showAuth(){document.getElementById('authError').textContent='';document.getElementById('authGate').style.display='flex'}
 function authBtnClick(){
