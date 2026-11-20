@@ -51,17 +51,26 @@ main{max-width:1000px;margin:auto;padding:70px 24px 100px}.eyebrow{font-size:11p
 .swatch.active{outline:2px solid var(--accent);outline-offset:2px}
 .swatch-name{margin-top:8px;font-size:11px;color:var(--muted);min-height:14px}
 select option{color:#292923;background:#fff}
+.site-footer{margin-top:70px;padding-top:28px;border-top:1px solid var(--line);text-align:center;font-size:11px;line-height:1.8;color:var(--muted)}
+.site-footer p{max-width:620px;margin:0 auto 10px}
+.ft-title{font:italic 17px Georgia,serif;color:var(--ink);margin-bottom:12px}
 </style>
 </head>
 <body>
 <div id="statusBar"></div>
-<header class="topbar"><span></span><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
+<header class="topbar"><a class="brand" href="#" onclick="home();return false">Cheryl Zielle</a><span><a href="#chapters" onclick="home()">Chapters</a> &nbsp; <a href="#" id="authBtn" onclick="authBtnClick();return false"><span id="navName">Login</span><img id="navAvatar" class="nav-avatar" alt=""></a></span></header>
 <main id="home">
 <section class="hero"><div class="eyebrow">A novel in 50 chapters</div><h1>Glass Heart</h1><div class="subtitle">Some things break quietly.</div>
 <p class="synopsis">In a city that never learned how to keep its promises, Mara collects the things people leave behind: letters, half-finished songs, and the small truths they were too afraid to say aloud. When a familiar name appears in a stranger's handwriting, the past begins asking to be let in.</p>
 <p class="warnings">CONTENT NOTES · GRIEF · EMOTIONAL DISTRESS · FAMILY CONFLICT · MATURE THEMES</p>
 <button class="primary" onclick="openChapter(1)">Begin reading →</button><div class="notice">Your reading progress is saved on this device.</div></section>
-<div class="rule"></div><section id="chapters"><div class="section-head"><div><div class="eyebrow">The story</div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
+<div class="rule"></div><section id="chapters"><div class="section-head"><div><h2>Chapters</h2></div><span class="eyebrow">01 — 50</span></div><div class="chapter-list" id="chapterList"></div></section>
+<footer class="site-footer">
+  <div class="ft-title">Broken Doll</div>
+  <p>Copyright © 2026 by CherylZielle. All rights reserved.</p>
+  <p>This story is an original work by CherylZielle. The characters, events, places, and storyline are products of creative imagination. Any resemblance to actual persons, places, or events is purely coincidental.</p>
+  <p>No part of this publication may be reproduced, distributed, or transmitted in any form without prior written permission from the copyright owner.</p>
+</footer>
 </main>
 <section id="reader"><div class="reader-top"><button class="text-btn" onclick="home()">← Library</button><span class="eyebrow" id="progressLabel">GLASS HEART</span><button class="text-btn" onclick="toggleSettings()">Aa Settings</button></div>
 <div class="settings-panel" id="settingsPanel">
@@ -71,7 +80,7 @@ select option{color:#292923;background:#fff}
 </div>
 <div class="reader-grid"><article class="story"><div class="chapter-kicker" id="chapterKicker"></div><h1 id="chapterTitle"></h1><div class="prose" id="prose"></div>
 <div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
-<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Leave a thought…"></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
+<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Write a comment..."></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
 </div></section>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p><div class="notice">Demo passwords: password1 through password5. Replace these before publishing.</div></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
@@ -235,7 +244,7 @@ function makeChapters(){
   for(var i=1;i<=total;i++){
     (function(i){
       var a=document.createElement('a');a.className='chapter-link';a.href='#chapter-'+i;
-      a.innerHTML='<span>'+String(i).padStart(2,'0')+' &nbsp; '+titles[(i-1)%5]+'</span><small>CHAPTER '+String(i).padStart(2,'0')+'</small>';
+      a.innerHTML='<span>'+String(i).padStart(2,'0')+' &nbsp; '+titles[(i-1)%5]+'</span>';
       a.onclick=function(e){e.preventDefault();openChapter(i)};
       el.appendChild(a);
     })(i);
@@ -390,7 +399,7 @@ async function toggleParagraphDiscussion(key,box,btn){
   document.querySelectorAll('.para-btn.active').forEach(function(el){el.classList.remove('active')});
   if(isOpen)return;
   box.classList.add('open');btn.classList.add('active');
-  box.innerHTML='<h4>Thoughts on this paragraph</h4><p>Loading...</p>';
+  box.innerHTML='<p>Loading...</p>';
   await renderParagraphComments(key,box);
 }
 async function renderParagraphComments(key,box){
@@ -399,9 +408,8 @@ async function renderParagraphComments(key,box){
     .or('passage_key.eq.'+key+',passage_key.like.'+key+'-s-*')
     .order('created_at',{ascending:true});
   if(r.error){box.textContent='Could not load comments: '+r.error.message;return}
-  var comments=r.data||[];box.innerHTML='<h4>Thoughts on this paragraph</h4>';
+  var comments=r.data||[];box.innerHTML='';
   var roots=comments.filter(function(c){return !c.parent_id});
-  if(!roots.length){var empty=document.createElement('p');empty.textContent='No thoughts yet. Be the first to comment.';box.appendChild(empty)}
   roots.forEach(function(c){
     var item=document.createElement('div');item.className='para-comment';
     var author=document.createElement('strong');author.textContent=(c.profiles&&c.profiles.display_name)||c.author_name||'Reader';
@@ -422,7 +430,7 @@ async function renderParagraphComments(key,box){
     });
     box.appendChild(item);
   });
-  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Leave a thought about this paragraph...';
+  var textarea=document.createElement('textarea');textarea.rows=2;textarea.placeholder='Write a comment...';
   var send=document.createElement('button');send.className='primary';send.textContent='Post comment';
   send.onclick=async function(){
     var text=textarea.value.trim(),name=readerName();
