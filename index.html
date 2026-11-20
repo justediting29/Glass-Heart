@@ -153,18 +153,36 @@ async function doAuth(mode){
   b1.disabled=b2.disabled=false;
 }
 async function logout(){await db.auth.signOut();document.getElementById('profileModal').style.display='none'}
+document.getElementById('avatarFile').addEventListener('change',function(){
+  var f=this.files[0];
+  if(f)document.getElementById('avatarPreview').src=URL.createObjectURL(f);
+});
+
 async function saveProfile(){
-  var msg=document.getElementById('profMsg'),name=document.getElementById('profName').value.trim(),
-      file=document.getElementById('avatarFile').files[0],url=myProfile.avatar_url;
-  if(!name){msg.textContent='Nama tidak boleh kosong';return}
-  if(file){
-    if(file.size>2*1024*1024){msg.textContent='Maksimal 2 MB';return}
-    var ext=(file.name.split('.').pop()||'jpg').toLowerCase();
-    var path=me.id+'/'+Date.now()+'.'+ext;
-    var up=await db.storage.from('avatars').upload(path,file,{contentType:file.type});
-    if(up.error){msg.textContent='Upload gagal: '+up.error.message;return}
-    url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
-  }
+  var msg=document.getElementById('profMsg'),
+      name=document.getElementById('profName').value.trim(),
+      file=document.getElementById('avatarFile').files[0],
+      url=myProfile.avatar_url||null;
+  msg.style.color='#a34d40';
+  if(!name){msg.textContent='Name cannot be empty';return}
+  msg.textContent='Saving...';
+  try{
+    if(file){
+      if(!file.type.startsWith('image/')){msg.textContent='Please choose an image file';return}
+      if(file.size>2*1024*1024){msg.textContent='Max 2 MB';return}
+      var ext=(file.name.split('.').pop()||'jpg').toLowerCase();
+      var path=me.id+'/'+Date.now()+'.'+ext;
+      var up=await db.storage.from('avatars').upload(path,file,{contentType:file.type,upsert:true});
+      if(up.error){msg.textContent='Upload failed: '+up.error.message;return}
+      url=db.storage.from('avatars').getPublicUrl(path).data.publicUrl;
+    }
+    var r=await db.from('profiles').upsert({id:me.id,display_name:name,avatar_url:url,updated_at:new Date().toISOString()}).select().single();
+    if(r.error){msg.textContent='Save failed: '+r.error.message;return}
+    myProfile=r.data;updateAuthUI();
+    document.getElementById('avatarPreview').src=url||FALLBACK_AVATAR;
+    msg.style.color='#3d6b4a';msg.textContent='Saved ✓';
+  }catch(e){msg.textContent='Error: '+e.message}
+}
   var r=await db.from('profiles').update({display_name:name,avatar_url:url,updated_at:new Date().toISOString()}).eq('id',me.id);
   if(r.error){msg.textContent=r.error.message;return}
   myProfile.display_name=name;myProfile.avatar_url=url;updateAuthUI();
