@@ -314,9 +314,9 @@ async function openChapter(n){
     document.getElementById('gateText').textContent='Chapters '+((g-1)*10+1)+'–'+(g*10)+' are password protected.';
     document.getElementById('password').value='';
     document.getElementById('gateError').textContent='';
-    document.getElementById('gate').style.display='flex';return;
+        document.getElementById('gate').style.display='flex';return;
   }
-  async function renderChapter(n){
+  renderChapter(n);
 }
 async function unlock(){
   var g=group(pending);
@@ -328,7 +328,7 @@ async function unlock(){
   renderChapter(pending);
 }
   
-function renderChapter(n){
+async function renderChapter(n){
   current=n;
   document.getElementById('home').style.display='none';
   document.getElementById('reader').style.display='block';
