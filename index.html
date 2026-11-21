@@ -59,6 +59,9 @@ select option{color:#292923;background:#fff}
 .lib-author{font:normal clamp(40px,8vw,72px)/1.05 Georgia,serif;letter-spacing:-.04em;margin:18px 0 50px}
 .lib-book{display:inline-block;font:italic 28px Georgia,serif;color:#4a2c3a;text-decoration:none;padding:16px 44px;background:linear-gradient(135deg,#f4d9d6 0%,#e8bfc0 55%,#d4a5a5 100%);border:1px solid #d4a5a5;border-radius:40px;box-shadow:0 8px 22px rgba(139,90,100,.22);transition:transform .25s,box-shadow .25s,background .25s,color .25s}
 .lib-book:hover{background:linear-gradient(135deg,#b98a8c 0%,#8f5f6e 100%);border-color:#8f5f6e;color:#fff;transform:translateY(-3px);box-shadow:0 12px 26px rgba(74,44,58,.3)}
+.lib-more{margin-top:26px;display:flex;flex-direction:column;align-items:center;gap:16px}
+.lib-soon{display:inline-block;font:italic 24px Georgia,serif;color:var(--muted);padding:14px 40px;border:1px dashed var(--line);border-radius:40px;opacity:.85;cursor:default}
+.lib-soon small{display:block;font:normal 10px Arial,sans-serif;letter-spacing:.2em;text-transform:uppercase;margin-top:4px}
 #navChapters{display:none}
 body.in-story #navChapters{display:inline}
 .back-link{display:block;margin:0 0 10px;padding:0}
@@ -72,6 +75,10 @@ body.in-story #navChapters{display:inline}
   <div class="eyebrow">Stories by</div>
   <h1 class="lib-author">Cheryl Zielle</h1>
   <a href="#" class="lib-book" onclick="home();return false">Broken Doll</a>
+<div class="lib-more">
+  <div class="lib-soon">Rules of Happiness <small>Coming Soon</small></div>
+  <div class="lib-soon">No Escape <small>Coming Soon</small></div>
+</div>
 </section>
 </main>
 <main id="home">
