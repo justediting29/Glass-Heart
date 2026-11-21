@@ -305,334 +305,28 @@ function home(){
   document.getElementById('gate').style.display='none';
   window.scrollTo(0,0);
 }
-function openChapter(n){
+async function openChapter(n){
   if(n<FIRST||n>LAST)return;
   if(!me){showAuth();return}
   pending=n;var g=group(n);
-  var unlocked=JSON.parse(lsGet('gh_unlocked')||'[]');
-  if(unlocked.indexOf(g)<0){
+  var r=await db.rpc('is_unlocked',{p_group:g});
+  if(r.data!==true){
     document.getElementById('gateText').textContent='Chapters '+((g-1)*10+1)+'–'+(g*10)+' are password protected.';
     document.getElementById('password').value='';
     document.getElementById('gateError').textContent='';
     document.getElementById('gate').style.display='flex';return;
   }
-  renderChapter(n);
+  async function renderChapter(n){
 }
-const PASSWORDS={
-  5:'h6H86dbg',
-  6:'Wkoa7eo7',
-  7:'an8bAk7e',
-  8:'db6bs4jB',
-  9:'nD75dn8b',
-  10:'sK0bd3jd'
-};
-function unlock(){
+async function unlock(){
   var g=group(pending);
-  if(document.getElementById('password').value!==PASSWORDS[g]){
+  var r=await db.rpc('unlock_group',{p_group:g,p_password:document.getElementById('password').value});
+  if(r.error||r.data!==true){
     document.getElementById('gateError').textContent='That password does not match.';return;
   }
-  var u=JSON.parse(lsGet('gh_unlocked')||'[]');if(u.indexOf(g)<0)u.push(g);
-  lsSet('gh_unlocked',JSON.stringify(u));document.getElementById('gate').style.display='none';renderChapter(pending);
+  document.getElementById('gate').style.display='none';
+  renderChapter(pending);
 }
-const CHAPTERS={
-  41:`𝙷𝐞𝚜𝐭𝚒𝐚 𝙳𝐞 𝙻𝐮𝚌𝐚 
-
-I jolted awake, my lungs burning as if air had been ripped from them. Before reality crashed back in, my body felt numbly locked in place. 
-
-There was a weight pressing down on me.
-
-My eyes lifted slowly, and I froze as I was greeted by a pair of familiar eyes. A chill shot through me, making my body tremble in fear.
-
-Pinned right above me was the one person I hated more than anyone in the world... William.
-
-"Miss me?" He whispered, that twisted smile stretching across his face. His eyes were all wrong, as if staring into a bottomless pit. They made my stomach twist, like I'd swallowed something rotten.
-
-Looking into them felt like peering at a dead thing, something that had rotted away long ago, stripped of any spark that once made it human.
-
-‘How? How is he here!?’
-
-Panic hit me. Without a second thought, I opened my mouth to scream. 
-
-"Stop! Get off of—!"
-
-But the words never came out complete as his left hand shot down, slamming my arm into the bed, restricting my movements. 
-
-Pain exploded through me as if my wrist might snap any second.
-
-At the same time, his right hand clamped hardly around my throat, squeezing just enough to cut off my air. 
-
-I gasped, but nothing got through. My chest heaved, lungs burning for breath that wouldn't come. 
-
-His face loomed closer, that empty smile never fading. 
-
-I clawed at his hand with my free arm, nails scraping skin, but he didn't even flinch. He just leaned in heavier, his body trapping mine completely.
-
-"You thought you could run from me?" He hissed, voice low and rough. "Nowhere to go, love."
-
-My heart pounded wild in my ears, terror flooding every inch of me. I bucked my hips, trying to throw him off, but he laughed as if mocking me.
-His strength overwhelmed mine, and the realization only made the panic worse. Fear crawled up my spine, but I managed to glare at him. 
-
-"Gosh," He murmured, tilting his head as if truly disappointed. "What happened to you, Hestia? Won't you smile for me?"
-
-I thrashed beneath him, fighting in silence, my vision blurring at the edges. My chest burned, heart beating fast like it was trying to escape.
-
-Then suddenly, his lips crashed against mine, demanding, owning every inch. His tongue pushed into my mouth, twisting and teasing mine. 
-
-But something deep inside me snapped awake. Instinct kicked in as I bit down in response, teeth sank into his tongue, and warm blood flooded my mouth, metallic and sharp on my taste buds. 
-
-"Fuck—!" A sharp gasp ripped from his throat. His strong hands, which had pinned me so tightly, loosened for just a split second, but it was all I needed.
-
-I shoved both palms against his chest with everything I had. My muscles burned from the effort, but adrenaline surged through me like fire. 
-
-I twisted my hips and rolled, finally breaking free from his weight. 
-
-The bedsheets tangled around me, but I kicked them off and scrambled to the floor. My head spun, panic roared in my ears, louder than any scream, and drowning out everything else. 
-
-"Somebody—help!" I screamed, my voice raw from terror. Sweat slicked my skin, and my bare feet slapped cold against the floor as I tried to stand. 
-
-But William recovered fast. One second he was down, and the next, his hand flew out like a snake striking. His fingers locked around my ankle in a grip, and yanked me with all his strength as my feet slipped out, causing me to crash hard onto the floor. 
-
-I let out a loud cry, but he didn't stop and dragged me backward across the floor. I clawed with my nails, trying to grab anything to hold on, but my fingers just slid uselessly.
-
-‘No, please!’
-
-It's funny, looking back at it now.
-
-Pain used to be my companion, something woven into my days that I barely notice. 
-
-I rarely cried because of it. I learned how to endure, to smile through everything, and pretend it didn't hurt as much as it did. 
-
-But after living with my brothers... everything changed.
-
-Pain no longer felt like something I could quietly endure.
-
-"Hades...!" I sobbed, my voice cracking into pieces as I screamed his name. 
-
-Before I could stop myself, I cried out their names desperately, like calling for them might make them appear at my side in an instant.
-
-Somewhere along the way, their warmth taught me that I didn't have to smile through everything, and I didn't have to suffer in silence anymore.
-
-‘I've become... such a crybaby.’
-
-"Why?! Hestia, only you can understand me!"
-
-Tears hot on my cheeks, heart pounding like it wanted to burst out of my chest.
-
-William's face twisted with pure rage above me, veins popping on his neck. His eyes were wild, burning holes into mine, full of hurt and fury, as if I betrayed him.
-
-"Why!?" He shouted, his voice booming off the walls. "Didn't you say you loved me?!"
-
-‘I didn't know what love was back then.’
-
-Ignoring his words, my free leg kicked wildly, but he just held tighter, pulling me closer.
-
-"You love me!" He snarled, tightening his grip. "You said you did! What happened to you?!"
-
-Tears streamed down my cheeks as I tried to scream again, my chest aching with the effort. But he silenced me, mouth crashing against mine once more, harder than before, bruising and unforgiving. The taste of blood clear in my mouth.
-
-‘I don't want the same thing to happen again.’
-
-‘I don't want it!’
-
-- "Love is cherishing. It didn't leave bruises and didn't call cruelty kindness."
-
-- "Our so-called 'mother' isn't an angel, Hestia. She twisted your mind until you couldn't tell the difference between affection and torment. You weren't loved."
-
-- "When someone does that to us, we don't answer with kindness. We hunt and drag them out of the light and let them drown in the dark they made for us. Love doesn't wound the beloved, it brands the ones who dared to touch them."
-
-- "If you don't like something, just crush it. Understand?" 
-
-- "Who cares about other people? As long as you're happy, that's all that matters, right? Prioritize yourself above others."
-
-- "Take from others before they take it from us."
-
-- "Everyone's hiding something inside, Hestia. Some people fill their stomachs with flowers. Others with poison, knives, or something rotten."
-
-- "Clearly show them where they belong, even if it's by force."
-
-- "Because they're low lives."
-
-All the words spilling from my brothers' mouths blurred together, and carved deep into my bones. 
-
-It reminded me of who I am, who I've always been, and what I could do.
-
-‘Right. Hestia De Luca. It's me in the present.’
-
-From the corner of my eye, something caught the light. It was three bottles of wine.
-
-‘I just need one second.’
-
-‘Head clear, Hestia. Think.’
-
-I stopped struggling. 
-
-The sudden stillness made William pause as well. His grip loosened, and he leaned back slightly, studying me with that familiar, vile gaze. 
-
-A crooked smile tugged at his lips. 
-
-"Oh?" He sneered. "Did you finally understand?"
-
-I didn't answer.
-
-In the same breath he took to gloat, my foot drove up hard between his legs. The sound he made was raw and animal as his hold broke, body folding in on itself. 
-
-I twisted free instantly, lunging for the table. My fingers finally closed around the wine bottle.
-
-Before he could recover, I swung it with all I have as glass shattered against his head with a violent crack. 
-
-Red wine and blood exploded outward, spraying across the room in a grotesque blur. He screamed in pain and collapsed, crumpling to the floor.
-
-Dark red pooling, streaked with shattered glass and the remnants of spilled wine. The smell was unexpectedly intoxicating and metallic.
-
-"N-no, H-hestia..." His words barely reached me before I seized another bottle.
-
-With no time for doubt, I smashed it against his head for the second time. The impact rang out and the bottle shattered, exploding into a crown of another jagged shards. 
-
-They caught the light as they fell, glittering like broken constellations before clattering uselessly to the floor. And when I think of constellations, I'm immediately reminded of my brother.
-
-‘Right... Ares loves stars.’
-
-For a fleeting, surreal moment, I thought they were beautiful.
-
-My breath tore in and out of my chest as though my lungs were learning again how to function. 
-
-My gaze then fixed on him.
-
-"...I already told you, lowlife."
-
-Something strange unfurled inside me then. Not fear or guilt, but blooming satisfaction, like a locked door finally thrown open. It spread through my veins undeniably, and with it came a terrifying clarity. 
-
-I wasn't breaking apart.
-
-I was becoming something else.
-
-My lips curved upward on their own, tasting of revelation. 
-
-All these years, I was taught that kindness meant lowering your eyes, swallowing words until they turned bitter in your throat, or letting people carve their needs into your head, and calling the scars maturity.
-
-I thought suffering quietly was proof of depth.
-
-I thought endurance was strength.
-
-I thought if I absorbed enough pain without making a sound, it would make me kind.
-
-Kindness became a ritual of self-harm that left no visible blood. A daily practice of choosing myself last.
-
-I was applauded for how much I could take.
-
-‘What bullshit.’
-
-Looking back, I don't recognize the person I was.
-
-So eager to be loved that I volunteered for my own destruction and so desperate for moral purity that I confused cruelty toward myself with goodness.
-
-I was stupid, foolishly conditioned to mistake survival for virtue.
-
-I hated that version of myself so much I wanted to erase them entirely.
-
-‘And now—’.
-
-"Do you see it?" I whispered, my voice dropping to a murmur meant only for him. "Do you really see what's inside me..."
-
-I leaned closer, letting the moment stretch.
-
-"...or what's inside your stomach?"
-
-My grip on the glass tightened, and the bottle trembled in my hand from anticipation. 
-
-The metallic scent of blood thick in the air.
-
-"Your stomach... it's all rotten. So I have to burn it. I have to, and I'm not even feeling bad!"
-
-In the face of my words, while holding his pain, William mustered the strength to open his mouth. "O-only you, it's supposed to be—"
-
-"I never loved you. Not for a single second. You disgust me."
-
-His eyes bulged wide, pupils dilating in raw shock, as if my words had punched the air from his lungs before I even moved.
-
-"No-no, that... that can't be true!"
-
-Panic etched into his eyes. It swallowed everything else, even the pain that should've stopped him. He looked wounded in a way that had nothing to do with blood or bruises. 
-
-The audacity of it burned hotter than anger. ‘How dare he wear that expression, as though he hadn't been the cause of all of this?’
-
-Without a second thought, I drove the broken bottle forward, slamming its edge straight into his side as the thick glass ripped through his suit and sank deep into his flesh with a sick, squishing sound, and blood bursting out in a hot rush.
-He let out a sharp yell, his whole body twisting in pain. 
-
-Bright red blood bloomed fast across his ribs, soaking the shirt in seconds. It spread like spilled paint, running down his side in thick streams.
-
-My anger exploded like a storm that had built up for years. 
-
-All those swallowed feelings came pouring out in one huge wave. My hands shook, but I gripped the bottle tighter, then yanked it out hard. 
-
-Blood squirted from the hole. Without stopping, I rammed it back higher up, right below his collarbone. 
-
-Blood sprayed out in a fine mist, smelling sharp like rusted metal. It hit my face and arms in warm splatters, dripping down my cheeks and soaking my dress. 
-
-‘I'm sorry Eros... the dress you carefully picked out was stained.’
-
-William's body jerked hard. His hands grabbed at my wrist, fingers digging in weak but desperate, nails scratching my skin raw as he tried to shove me off.
-
-"P-pl—" His words choked off in a wet gurgle. Pink froth bubbled from his lips, mixing with blood that ran down his chin. 
-
-His eyes went wide, pleading, but I didn't stop. I stabbed again. Fourth time, fifth, I lost track of it.
-
-I drove the glass into his belly, twisting it side to side to tear more. Blood gushed over my knuckles, coating the bottle in a shiny red glaze.
-
-"I already told you—" My voice broke as I sucked in a ragged breath. Sweat poured down my face, stinging my eyes, mixing with the blood splatters that cooled sticky on my skin. "—to stop!"
-
-My chest heaved with hard, burning breaths.
-
-William's blood smeared everywhere. Across his pale skin, down his arms, pooling under him on the shiny floor. 
-
-‘You deserved this.’
-
-‘You, who trapped me in that filthy basement more than once. Pinned me down under your heavy body, crushing the air from my lungs.’
-
-‘Whispered sickening love while you forced yourself on me, ripping me apart inside and out.’
-
-‘Split me open, left me bleeding and broken…’
-
-"Fucking lowlife."
-
-‘Rotten things like you need to burn.’
-
-I twisted the shard one final time, grinding it deep into the soft mush of his gut. 
-
-And then... those eyes, always sickening and hungry for love, went empty as the light faded into the abyss. It became like a dull glass staring at nothing.
-
-The bottle stuck out from his belly like a twisted prize as I stayed on top of his body, knees pressing into the warm slick of blood on the floor. 
-
-My rage drained out, leaving me hollow and numb.
-
-The room went dead quiet. Just the thick smell of iron blood and wine hanging in the air.
-
-Then, a familiar voice sliced through the door from the hallway. 
-
-"Hestia!"
-
-It was Ares. His deep shout bounced off the hotel walls, followed by more heavy footsteps rushing closer down the carpeted hall.
-
-My heart jumped in my chest, pure relief washing over me. 
-
-‘But... I'm really sorry, Ares. Sorry I can't muster the strength to respond. I'm tired.... I'm really sorry.’
-
-A full minute crawled by, stretching into what felt like an endless night. 
-
-Until a gunshot rang out, and the door flew open, slamming against the wall. 
-
-My head slowly turned toward it.
-
-Hades miraculously burst inside first, his tall, broad frame blocking the hallway light like a shadow came alive. His grey eyes widened as they swept the room. 
-
-The dark pool of blood spread slowly across the cold white marble, inching toward his shoes. William's limp body sprawled under me, and the jagged neck of the shattered wine bottle still jammed deep into the gut.
-
-Sweat beaded on my forehead, my hands sticky and trembling. I lifted my head slowly, and met Hades' gaze, those sharp eyes now wide with shock.
-
-My voice came out weak, barely above a rasp.
-
-"...Hades."`.split('\n\n')
-};
   
 function renderChapter(n){
   current=n;
@@ -645,7 +339,8 @@ function renderChapter(n){
   document.getElementById('next').style.visibility=n===LAST?'hidden':'visible';
   lsSet('gh_progress',JSON.stringify({chapter:n,scroll:0}));
 
-  var paragraphs=CHAPTERS[n]||['Chapter ini belum tersedia.'];
+  var cr=await db.rpc('get_chapter',{p_chapter:n});
+  var paragraphs=cr.data?cr.data.trim().split(/\n\s*\n/):['Chapter ini belum tersedia.'];
   var prose=document.getElementById('prose');prose.innerHTML='';
   for(var j=0;j<paragraphs.length;j++){
     (function(j){
