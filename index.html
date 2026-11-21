@@ -75,7 +75,7 @@ body.in-story #navChapters{display:inline}
 </section>
 </main>
 <main id="home">
-<section class="hero"><button class="text-btn back-link" onclick="showLibrary()">← Back</button><h1>Broken Doll</h1></div>
+<section class="hero"><button class="text-btn back-link" onclick="showLibrary()">← Back</button><h1>Broken Doll</h1>
 <p class="synopsis">The De Luca brothers are ruthless, merciless, and deeply entrenched in the criminal underworld.
 
 But when a little sister they never knew existed suddenly appears in their lives, their world takes an unexpected turn as she might be the one thing they never knew they needed.</p>
@@ -99,7 +99,7 @@ But when a little sister they never knew existed suddenly appears in their lives
 <div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
 <section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Write a comment..."></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
 </div></section>
-<div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p>
+<div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
   <div class="eyebrow">Welcome!</div><h2>Reader Area</h2>
   <input id="authName" placeholder="Username">
@@ -324,6 +324,9 @@ function unlock(){
   if(document.getElementById('password').value!==PASSWORDS[g]){
     document.getElementById('gateError').textContent='That password does not match.';return;
   }
+  var u=JSON.parse(lsGet('gh_unlocked')||'[]');if(u.indexOf(g)<0)u.push(g);
+  lsSet('gh_unlocked',JSON.stringify(u));document.getElementById('gate').style.display='none';renderChapter(pending);
+}
 const CHAPTERS={
   41:`𝙷𝐞𝚜𝐭𝚒𝐚 𝙳𝐞 𝙻𝐮𝚌𝐚 
 
@@ -623,6 +626,7 @@ My voice came out weak, barely above a rasp.
 
 "...Hades."`.split('\n\n')
 };
+  
 function renderChapter(n){
   current=n;
   document.getElementById('home').style.display='none';
@@ -635,7 +639,6 @@ function renderChapter(n){
   lsSet('gh_progress',JSON.stringify({chapter:n,scroll:0}));
 
   var paragraphs=CHAPTERS[n]||['Chapter ini belum tersedia.'];
-  ];
   var prose=document.getElementById('prose');prose.innerHTML='';
   for(var j=0;j<paragraphs.length;j++){
     (function(j){
