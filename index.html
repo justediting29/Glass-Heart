@@ -97,7 +97,7 @@ But when a little sister they never knew existed suddenly appears in their lives
 </div>
 <div class="reader-grid"><article class="story"><div class="chapter-kicker" id="chapterKicker"></div><h1 id="chapterTitle"></h1><div class="prose" id="prose"></div>
 <div class="nav-chapters"><button class="text-btn" id="prev" onclick="openChapter(current-1)">← Previous</button><button class="text-btn" id="next" onclick="openChapter(current+1)">Next chapter →</button></div>
-<section class="comments"><div class="eyebrow">The conversation</div><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Write a comment..."></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
+<section class="comments"><h2>Chapter comments</h2><div id="commentList"></div><div class="comment-form"><textarea id="commentText" rows="3" placeholder="Write a comment..."></textarea><button class="primary" onclick="postComment()">Post comment</button></div></section></article>
 </div></section>
 <div class="gate" id="gate"><div class="gate-card"><div class="eyebrow">A little key, please</div><h2>This chapter is locked</h2><p id="gateText">Enter the password to read this section.</p><input id="password" type="password" placeholder="Chapter group password"><button class="primary" onclick="unlock()">Unlock chapters</button><p id="gateError" style="color:#a34d40;font-size:12px"></p></div></div>
 <div class="gate" id="authGate"><div class="gate-card">
@@ -701,7 +701,7 @@ async function renderComments(){
       });
       list.appendChild(d);
     });
-    if(!roots.length)list.textContent='No comments yet. Be the first to leave a thought.';
+    if(!roots.length)list.textContent='';
   }catch(e){list.textContent='Could not load comments: '+e.message}
 }
 async function postComment(){
